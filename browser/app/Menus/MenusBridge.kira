@@ -10,8 +10,8 @@
 // Nothing outside `app/Menus` calls these: `MenusCommands.kira` is where the
 // browser finds them, in Kira types.
 
-@FFI.Extern { library: harmony_browser; symbol: hb_menus_attach; abi: c; }
-function nativeMenusAttachEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_menus_attach, abi: c }
+function nativeMenusAttachEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeMenusAttach() {
@@ -22,8 +22,8 @@ function nativeMenusAttach() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_menus_shutdown; abi: c; }
-function nativeMenusShutdownEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_menus_shutdown, abi: c }
+function nativeMenusShutdownEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeMenusShutdown() {
@@ -34,8 +34,8 @@ function nativeMenusShutdown() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_menus_next_command; abi: c; }
-function nativeMenusNextCommandEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_menus_next_command, abi: c }
+function nativeMenusNextCommandEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeMenusNextCommand() -> I32 {
@@ -45,8 +45,8 @@ function nativeMenusNextCommand() -> I32 {
     return nativeMenusNextCommandEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_menus_command_text; abi: c; }
-function nativeMenusCommandTextEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_menus_command_text, abi: c }
+function nativeMenusCommandTextEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeMenusCommandText() -> String {
@@ -56,8 +56,8 @@ function nativeMenusCommandText() -> String {
     return nativeMenusCommandTextEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_menus_command_tab; abi: c; }
-function nativeMenusCommandTabEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_menus_command_tab, abi: c }
+function nativeMenusCommandTabEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeMenusCommandTab() -> I32 {
@@ -67,8 +67,8 @@ function nativeMenusCommandTab() -> I32 {
     return nativeMenusCommandTabEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_menus_revision; abi: c; }
-function nativeMenusRevisionEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_menus_revision, abi: c }
+function nativeMenusRevisionEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeMenusRevision() -> I32 {
@@ -78,8 +78,8 @@ function nativeMenusRevision() -> I32 {
     return nativeMenusRevisionEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_menus_error; abi: c; }
-function nativeMenusErrorEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_menus_error, abi: c }
+function nativeMenusErrorEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeMenusError() -> String {

@@ -12,8 +12,8 @@
 
 // --- Lifetime ---------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_frame; abi: c; }
-function nativeInputFrameEngine(hostWindow: RawPtr) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_frame, abi: c }
+function nativeInputFrameEngine(hostWindow: RawPtr) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFrame(hostWindow: RawPtr) {
@@ -24,8 +24,8 @@ function nativeInputFrame(hostWindow: RawPtr) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_shutdown; abi: c; }
-function nativeInputShutdownEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_shutdown, abi: c }
+function nativeInputShutdownEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputShutdown() {
@@ -36,8 +36,8 @@ function nativeInputShutdown() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_ready; abi: c; }
-function nativeInputReadyEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_ready, abi: c }
+function nativeInputReadyEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputReady() -> I32 {
@@ -47,8 +47,8 @@ function nativeInputReady() -> I32 {
     return nativeInputReadyEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_error; abi: c; }
-function nativeInputErrorEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_error, abi: c }
+function nativeInputErrorEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputError() -> String {
@@ -58,8 +58,8 @@ function nativeInputError() -> String {
     return nativeInputErrorEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_revision; abi: c; }
-function nativeInputRevisionEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_revision, abi: c }
+function nativeInputRevisionEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputRevision() -> I32 {
@@ -71,8 +71,8 @@ function nativeInputRevision() -> I32 {
 
 // --- Events -----------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_next_event; abi: c; }
-function nativeInputNextEventEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_next_event, abi: c }
+function nativeInputNextEventEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputNextEvent() -> I32 {
@@ -82,8 +82,8 @@ function nativeInputNextEvent() -> I32 {
     return nativeInputNextEventEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_event_argument; abi: c; }
-function nativeInputEventArgumentEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_event_argument, abi: c }
+function nativeInputEventArgumentEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputEventArgument() -> I32 {
@@ -93,8 +93,8 @@ function nativeInputEventArgument() -> I32 {
     return nativeInputEventArgumentEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_event_target; abi: c; }
-function nativeInputEventTargetEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_event_target, abi: c }
+function nativeInputEventTargetEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputEventTarget() -> I32 {
@@ -106,8 +106,8 @@ function nativeInputEventTarget() -> I32 {
 
 // --- Focus ------------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_focus_owner; abi: c; }
-function nativeInputFocusOwnerEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_focus_owner, abi: c }
+function nativeInputFocusOwnerEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFocusOwner() -> I32 {
@@ -117,8 +117,8 @@ function nativeInputFocusOwner() -> I32 {
     return nativeInputFocusOwnerEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_focus_chrome; abi: c; }
-function nativeInputFocusChromeEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_focus_chrome, abi: c }
+function nativeInputFocusChromeEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFocusChrome() {
@@ -129,8 +129,8 @@ function nativeInputFocusChrome() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_focus_content; abi: c; }
-function nativeInputFocusContentEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_focus_content, abi: c }
+function nativeInputFocusContentEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFocusContent() {
@@ -141,8 +141,8 @@ function nativeInputFocusContent() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_chrome_text_target; abi: c; }
-function nativeInputChromeTextTargetEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_chrome_text_target, abi: c }
+function nativeInputChromeTextTargetEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputChromeTextTarget() -> I32 {
@@ -152,8 +152,8 @@ function nativeInputChromeTextTarget() -> I32 {
     return nativeInputChromeTextTargetEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_set_chrome_text_target; abi: c; }
-function nativeInputSetChromeTextTargetEngine(target: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_set_chrome_text_target, abi: c }
+function nativeInputSetChromeTextTargetEngine(target: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputSetChromeTextTarget(target: I32) {
@@ -164,8 +164,8 @@ function nativeInputSetChromeTextTarget(target: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_focus_cycle; abi: c; }
-function nativeInputFocusCycleEngine(direction: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_focus_cycle, abi: c }
+function nativeInputFocusCycleEngine(direction: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFocusCycle(direction: I32) {
@@ -176,8 +176,8 @@ function nativeInputFocusCycle(direction: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_press_serial; abi: c; }
-function nativeInputPressSerialEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_press_serial, abi: c }
+function nativeInputPressSerialEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputPressSerial() -> I32 {
@@ -189,8 +189,8 @@ function nativeInputPressSerial() -> I32 {
 
 // --- Page zoom --------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_zoom_in; abi: c; }
-function nativeInputZoomInEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_zoom_in, abi: c }
+function nativeInputZoomInEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputZoomIn() {
@@ -201,8 +201,8 @@ function nativeInputZoomIn() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_zoom_out; abi: c; }
-function nativeInputZoomOutEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_zoom_out, abi: c }
+function nativeInputZoomOutEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputZoomOut() {
@@ -213,8 +213,8 @@ function nativeInputZoomOut() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_zoom_reset; abi: c; }
-function nativeInputZoomResetEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_zoom_reset, abi: c }
+function nativeInputZoomResetEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputZoomReset() {
@@ -225,8 +225,8 @@ function nativeInputZoomReset() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_zoom_set; abi: c; }
-function nativeInputZoomSetEngine(percent: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_zoom_set, abi: c }
+function nativeInputZoomSetEngine(percent: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputZoomSet(percent: I32) {
@@ -237,8 +237,8 @@ function nativeInputZoomSet(percent: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_zoom_percent; abi: c; }
-function nativeInputZoomPercentEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_zoom_percent, abi: c }
+function nativeInputZoomPercentEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputZoomPercent() -> I32 {
@@ -248,8 +248,8 @@ function nativeInputZoomPercent() -> I32 {
     return nativeInputZoomPercentEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_zoom_origin; abi: c; }
-function nativeInputZoomOriginEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_zoom_origin, abi: c }
+function nativeInputZoomOriginEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputZoomOrigin() -> String {
@@ -261,8 +261,8 @@ function nativeInputZoomOrigin() -> String {
 
 // --- Find in page -----------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_find_open; abi: c; }
-function nativeInputFindOpenEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_find_open, abi: c }
+function nativeInputFindOpenEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFindOpen() {
@@ -273,8 +273,8 @@ function nativeInputFindOpen() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_find_close; abi: c; }
-function nativeInputFindCloseEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_find_close, abi: c }
+function nativeInputFindCloseEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFindClose() {
@@ -285,8 +285,8 @@ function nativeInputFindClose() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_find_is_open; abi: c; }
-function nativeInputFindIsOpenEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_find_is_open, abi: c }
+function nativeInputFindIsOpenEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFindIsOpen() -> I32 {
@@ -296,8 +296,8 @@ function nativeInputFindIsOpen() -> I32 {
     return nativeInputFindIsOpenEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_find_search; abi: c; }
-function nativeInputFindSearchEngine(text: CString, backwards: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_find_search, abi: c }
+function nativeInputFindSearchEngine(text: CString, backwards: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFindSearch(text: borrow String, backwards: I32) {
@@ -308,8 +308,8 @@ function nativeInputFindSearch(text: borrow String, backwards: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_find_match_count; abi: c; }
-function nativeInputFindMatchCountEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_find_match_count, abi: c }
+function nativeInputFindMatchCountEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFindMatchCount() -> I32 {
@@ -319,8 +319,8 @@ function nativeInputFindMatchCount() -> I32 {
     return nativeInputFindMatchCountEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_find_match_index; abi: c; }
-function nativeInputFindMatchIndexEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_find_match_index, abi: c }
+function nativeInputFindMatchIndexEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFindMatchIndex() -> I32 {
@@ -330,8 +330,8 @@ function nativeInputFindMatchIndex() -> I32 {
     return nativeInputFindMatchIndexEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_find_searched; abi: c; }
-function nativeInputFindSearchedEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_find_searched, abi: c }
+function nativeInputFindSearchedEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputFindSearched() -> I32 {
@@ -343,8 +343,8 @@ function nativeInputFindSearched() -> I32 {
 
 // --- Printing ---------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_input_print; abi: c; }
-function nativeInputPrintEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_input_print, abi: c }
+function nativeInputPrintEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeInputPrint() {

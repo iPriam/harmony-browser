@@ -14,8 +14,8 @@
 // to register with this one first. What is declared here is what the widgets ask
 // afterwards: whether it came up, and why it did not.
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_ready; abi: c; }
-function nativeTabsReadyEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_ready, abi: c }
+function nativeTabsReadyEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsReady() -> I32 {
@@ -28,8 +28,8 @@ function nativeTabsReady() -> I32 {
     return nativeTabsReadyEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_shutdown; abi: c; }
-function nativeTabsShutdownEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_shutdown, abi: c }
+function nativeTabsShutdownEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsShutdown() {
@@ -40,8 +40,8 @@ function nativeTabsShutdown() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_error; abi: c; }
-function nativeTabsErrorEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_error, abi: c }
+function nativeTabsErrorEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsError() -> String {
@@ -56,8 +56,8 @@ function nativeTabsError() -> String {
 
 // --- Opening and closing ----------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_open; abi: c; }
-function nativeTabsOpenEngine(url: CString, foreground: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_open, abi: c }
+function nativeTabsOpenEngine(url: CString, foreground: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsOpen(url: String, foreground: I32) -> I32 {
@@ -71,8 +71,8 @@ function nativeTabsOpen(url: String, foreground: I32) -> I32 {
     return nativeTabsOpenEngine(url, foreground)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_open_at; abi: c; }
-function nativeTabsOpenAtEngine(url: CString, index: I32, foreground: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_open_at, abi: c }
+function nativeTabsOpenAtEngine(url: CString, index: I32, foreground: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsOpenAt(url: String, index: I32, foreground: I32) -> I32 {
@@ -86,8 +86,8 @@ function nativeTabsOpenAt(url: String, index: I32, foreground: I32) -> I32 {
     return nativeTabsOpenAtEngine(url, index, foreground)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_close; abi: c; }
-function nativeTabsCloseEngine(tabId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_close, abi: c }
+function nativeTabsCloseEngine(tabId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsClose(tabId: I32) {
@@ -101,8 +101,8 @@ function nativeTabsClose(tabId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_close_others; abi: c; }
-function nativeTabsCloseOthersEngine(tabId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_close_others, abi: c }
+function nativeTabsCloseOthersEngine(tabId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsCloseOthers(tabId: I32) {
@@ -116,8 +116,8 @@ function nativeTabsCloseOthers(tabId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_close_all; abi: c; }
-function nativeTabsCloseAllEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_close_all, abi: c }
+function nativeTabsCloseAllEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsCloseAll() {
@@ -131,8 +131,8 @@ function nativeTabsCloseAll() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_reopen_closed; abi: c; }
-function nativeTabsReopenClosedEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_reopen_closed, abi: c }
+function nativeTabsReopenClosedEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsReopenClosed() -> I32 {
@@ -145,8 +145,8 @@ function nativeTabsReopenClosed() -> I32 {
     return nativeTabsReopenClosedEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_closed_count; abi: c; }
-function nativeTabsClosedCountEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_closed_count, abi: c }
+function nativeTabsClosedCountEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsClosedCount() -> I32 {
@@ -161,8 +161,8 @@ function nativeTabsClosedCount() -> I32 {
 
 // --- Selection --------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_select; abi: c; }
-function nativeTabsSelectEngine(tabId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_select, abi: c }
+function nativeTabsSelectEngine(tabId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsSelect(tabId: I32) {
@@ -176,8 +176,8 @@ function nativeTabsSelect(tabId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_select_index; abi: c; }
-function nativeTabsSelectIndexEngine(index: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_select_index, abi: c }
+function nativeTabsSelectIndexEngine(index: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsSelectIndex(index: I32) {
@@ -191,8 +191,8 @@ function nativeTabsSelectIndex(index: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_select_next; abi: c; }
-function nativeTabsSelectNextEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_select_next, abi: c }
+function nativeTabsSelectNextEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsSelectNext() {
@@ -206,8 +206,8 @@ function nativeTabsSelectNext() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_select_previous; abi: c; }
-function nativeTabsSelectPreviousEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_select_previous, abi: c }
+function nativeTabsSelectPreviousEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsSelectPrevious() {
@@ -223,8 +223,8 @@ function nativeTabsSelectPrevious() {
 
 // --- Ordering ---------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_move; abi: c; }
-function nativeTabsMoveEngine(tabId: I32, toIndex: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_move, abi: c }
+function nativeTabsMoveEngine(tabId: I32, toIndex: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsMove(tabId: I32, toIndex: I32) {
@@ -238,8 +238,8 @@ function nativeTabsMove(tabId: I32, toIndex: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_set_pinned; abi: c; }
-function nativeTabsSetPinnedEngine(tabId: I32, pinned: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_set_pinned, abi: c }
+function nativeTabsSetPinnedEngine(tabId: I32, pinned: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsSetPinned(tabId: I32, pinned: I32) {
@@ -255,8 +255,8 @@ function nativeTabsSetPinned(tabId: I32, pinned: I32) {
 
 // --- Navigation -------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_load; abi: c; }
-function nativeTabsLoadEngine(tabId: I32, url: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_load, abi: c }
+function nativeTabsLoadEngine(tabId: I32, url: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsLoad(tabId: I32, url: String) {
@@ -271,8 +271,8 @@ function nativeTabsLoad(tabId: I32, url: String) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_go_back; abi: c; }
-function nativeTabsGoBackEngine(tabId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_go_back, abi: c }
+function nativeTabsGoBackEngine(tabId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsGoBack(tabId: I32) {
@@ -287,8 +287,8 @@ function nativeTabsGoBack(tabId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_go_forward; abi: c; }
-function nativeTabsGoForwardEngine(tabId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_go_forward, abi: c }
+function nativeTabsGoForwardEngine(tabId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsGoForward(tabId: I32) {
@@ -303,8 +303,8 @@ function nativeTabsGoForward(tabId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_reload; abi: c; }
-function nativeTabsReloadEngine(tabId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_reload, abi: c }
+function nativeTabsReloadEngine(tabId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsReload(tabId: I32) {
@@ -319,8 +319,8 @@ function nativeTabsReload(tabId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_stop; abi: c; }
-function nativeTabsStopEngine(tabId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_stop, abi: c }
+function nativeTabsStopEngine(tabId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsStop(tabId: I32) {
@@ -337,8 +337,8 @@ function nativeTabsStop(tabId: I32) {
 
 // --- The published list -----------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_count; abi: c; }
-function nativeTabsCountEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_count, abi: c }
+function nativeTabsCountEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsCount() -> I32 {
@@ -351,8 +351,8 @@ function nativeTabsCount() -> I32 {
     return nativeTabsCountEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_revision; abi: c; }
-function nativeTabsRevisionEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_revision, abi: c }
+function nativeTabsRevisionEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsRevision() -> I32 {
@@ -365,8 +365,8 @@ function nativeTabsRevision() -> I32 {
     return nativeTabsRevisionEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_id_at; abi: c; }
-function nativeTabsIdAtEngine(index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_id_at, abi: c }
+function nativeTabsIdAtEngine(index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsIdAt(index: I32) -> I32 {
@@ -382,8 +382,8 @@ function nativeTabsIdAt(index: I32) -> I32 {
     return nativeTabsIdAtEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_index_of; abi: c; }
-function nativeTabsIndexOfEngine(tabId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_index_of, abi: c }
+function nativeTabsIndexOfEngine(tabId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsIndexOf(tabId: I32) -> I32 {
@@ -393,8 +393,8 @@ function nativeTabsIndexOf(tabId: I32) -> I32 {
     return nativeTabsIndexOfEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_active_id; abi: c; }
-function nativeTabsActiveIdEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_active_id, abi: c }
+function nativeTabsActiveIdEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsActiveId() -> I32 {
@@ -407,8 +407,8 @@ function nativeTabsActiveId() -> I32 {
     return nativeTabsActiveIdEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_active_index; abi: c; }
-function nativeTabsActiveIndexEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_active_index, abi: c }
+function nativeTabsActiveIndexEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsActiveIndex() -> I32 {
@@ -421,8 +421,8 @@ function nativeTabsActiveIndex() -> I32 {
     return nativeTabsActiveIndexEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_title; abi: c; }
-function nativeTabsTitleEngine(tabId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_title, abi: c }
+function nativeTabsTitleEngine(tabId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsTitle(tabId: I32) -> String {
@@ -435,8 +435,8 @@ function nativeTabsTitle(tabId: I32) -> String {
     return nativeTabsTitleEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_url; abi: c; }
-function nativeTabsURLEngine(tabId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_url, abi: c }
+function nativeTabsURLEngine(tabId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsURL(tabId: I32) -> String {
@@ -449,8 +449,8 @@ function nativeTabsURL(tabId: I32) -> String {
     return nativeTabsURLEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_host; abi: c; }
-function nativeTabsHostEngine(tabId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_host, abi: c }
+function nativeTabsHostEngine(tabId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsHost(tabId: I32) -> String {
@@ -463,8 +463,8 @@ function nativeTabsHost(tabId: I32) -> String {
     return nativeTabsHostEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_is_loading; abi: c; }
-function nativeTabsIsLoadingEngine(tabId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_is_loading, abi: c }
+function nativeTabsIsLoadingEngine(tabId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsIsLoading(tabId: I32) -> I32 {
@@ -477,8 +477,8 @@ function nativeTabsIsLoading(tabId: I32) -> I32 {
     return nativeTabsIsLoadingEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_is_pinned; abi: c; }
-function nativeTabsIsPinnedEngine(tabId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_is_pinned, abi: c }
+function nativeTabsIsPinnedEngine(tabId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsIsPinned(tabId: I32) -> I32 {
@@ -491,8 +491,8 @@ function nativeTabsIsPinned(tabId: I32) -> I32 {
     return nativeTabsIsPinnedEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_can_go_back; abi: c; }
-function nativeTabsCanGoBackEngine(tabId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_can_go_back, abi: c }
+function nativeTabsCanGoBackEngine(tabId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsCanGoBack(tabId: I32) -> I32 {
@@ -505,8 +505,8 @@ function nativeTabsCanGoBack(tabId: I32) -> I32 {
     return nativeTabsCanGoBackEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_can_go_forward; abi: c; }
-function nativeTabsCanGoForwardEngine(tabId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_can_go_forward, abi: c }
+function nativeTabsCanGoForwardEngine(tabId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsCanGoForward(tabId: I32) -> I32 {
@@ -519,8 +519,8 @@ function nativeTabsCanGoForward(tabId: I32) -> I32 {
     return nativeTabsCanGoForwardEngine(tabId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_tabs_progress; abi: c; }
-function nativeTabsProgressEngine(tabId: I32) -> Float;
+@FFI.Extern { library: harmony_browser, symbol: hb_tabs_progress, abi: c }
+function nativeTabsProgressEngine(tabId: I32) -> Float
 
 // Guarded: a build with no engine answers without calling it.
 function nativeTabsProgress(tabId: I32) -> Float {

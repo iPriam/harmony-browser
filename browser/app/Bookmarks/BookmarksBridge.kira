@@ -12,8 +12,8 @@
 
 // --- Lifecycle ---------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_attach; abi: c; }
-function hbBookmarksAttachEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_attach, abi: c }
+function hbBookmarksAttachEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarksAttach() {
@@ -24,8 +24,8 @@ function hbBookmarksAttach() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_shutdown; abi: c; }
-function hbBookmarksShutdownEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_shutdown, abi: c }
+function hbBookmarksShutdownEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarksShutdown() {
@@ -36,8 +36,8 @@ function hbBookmarksShutdown() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_ready; abi: c; }
-function hbBookmarksReadyEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_ready, abi: c }
+function hbBookmarksReadyEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarksReady() -> I32 {
@@ -47,8 +47,8 @@ function hbBookmarksReady() -> I32 {
     return hbBookmarksReadyEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_error; abi: c; }
-function hbBookmarksErrorEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_error, abi: c }
+function hbBookmarksErrorEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarksError() -> String {
@@ -58,8 +58,8 @@ function hbBookmarksError() -> String {
     return hbBookmarksErrorEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_now; abi: c; }
-function hbBookmarksNowEngine() -> Float;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_now, abi: c }
+function hbBookmarksNowEngine() -> Float
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarksNow() -> Float {
@@ -69,8 +69,8 @@ function hbBookmarksNow() -> Float {
     return hbBookmarksNowEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_revision; abi: c; }
-function hbBookmarksRevisionEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_revision, abi: c }
+function hbBookmarksRevisionEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarksRevision() -> I32 {
@@ -82,8 +82,8 @@ function hbBookmarksRevision() -> I32 {
 
 // --- History -----------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_query; abi: c; }
-function hbHistoryQueryEngine(text: CString, mode: I32, limit: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_query, abi: c }
+function hbHistoryQueryEngine(text: CString, mode: I32, limit: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryQuery(text: borrow String, mode: I32, limit: I32) -> I32 {
@@ -93,8 +93,8 @@ function hbHistoryQuery(text: borrow String, mode: I32, limit: I32) -> I32 {
     return hbHistoryQueryEngine(text, mode, limit)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_url; abi: c; }
-function hbHistoryURLEngine(index: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_url, abi: c }
+function hbHistoryURLEngine(index: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryURL(index: I32) -> String {
@@ -104,8 +104,8 @@ function hbHistoryURL(index: I32) -> String {
     return hbHistoryURLEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_title; abi: c; }
-function hbHistoryTitleEngine(index: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_title, abi: c }
+function hbHistoryTitleEngine(index: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryTitle(index: I32) -> String {
@@ -115,8 +115,8 @@ function hbHistoryTitle(index: I32) -> String {
     return hbHistoryTitleEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_host; abi: c; }
-function hbHistoryHostEngine(index: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_host, abi: c }
+function hbHistoryHostEngine(index: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryHost(index: I32) -> String {
@@ -126,8 +126,8 @@ function hbHistoryHost(index: I32) -> String {
     return hbHistoryHostEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_last_visit; abi: c; }
-function hbHistoryLastVisitEngine(index: I32) -> Float;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_last_visit, abi: c }
+function hbHistoryLastVisitEngine(index: I32) -> Float
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryLastVisit(index: I32) -> Float {
@@ -137,8 +137,8 @@ function hbHistoryLastVisit(index: I32) -> Float {
     return hbHistoryLastVisitEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_visit_count; abi: c; }
-function hbHistoryVisitCountEngine(index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_visit_count, abi: c }
+function hbHistoryVisitCountEngine(index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryVisitCount(index: I32) -> I32 {
@@ -148,8 +148,8 @@ function hbHistoryVisitCount(index: I32) -> I32 {
     return hbHistoryVisitCountEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_day; abi: c; }
-function hbHistoryDayEngine(index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_day, abi: c }
+function hbHistoryDayEngine(index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryDay(index: I32) -> I32 {
@@ -159,8 +159,8 @@ function hbHistoryDay(index: I32) -> I32 {
     return hbHistoryDayEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_score; abi: c; }
-function hbHistoryScoreEngine(index: I32) -> Float;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_score, abi: c }
+function hbHistoryScoreEngine(index: I32) -> Float
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryScore(index: I32) -> Float {
@@ -170,8 +170,8 @@ function hbHistoryScore(index: I32) -> Float {
     return hbHistoryScoreEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_count; abi: c; }
-function hbHistoryCountEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_count, abi: c }
+function hbHistoryCountEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryCount() -> I32 {
@@ -181,8 +181,8 @@ function hbHistoryCount() -> I32 {
     return hbHistoryCountEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_visit_total; abi: c; }
-function hbHistoryVisitTotalEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_visit_total, abi: c }
+function hbHistoryVisitTotalEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryVisitTotal() -> I32 {
@@ -192,8 +192,8 @@ function hbHistoryVisitTotal() -> I32 {
     return hbHistoryVisitTotalEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_today; abi: c; }
-function hbHistoryTodayEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_today, abi: c }
+function hbHistoryTodayEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryToday() -> I32 {
@@ -203,8 +203,8 @@ function hbHistoryToday() -> I32 {
     return hbHistoryTodayEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_day_year; abi: c; }
-function hbHistoryDayYearEngine(day: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_day_year, abi: c }
+function hbHistoryDayYearEngine(day: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryDayYear(day: I32) -> I32 {
@@ -214,8 +214,8 @@ function hbHistoryDayYear(day: I32) -> I32 {
     return hbHistoryDayYearEngine(day)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_day_month; abi: c; }
-function hbHistoryDayMonthEngine(day: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_day_month, abi: c }
+function hbHistoryDayMonthEngine(day: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryDayMonth(day: I32) -> I32 {
@@ -225,8 +225,8 @@ function hbHistoryDayMonth(day: I32) -> I32 {
     return hbHistoryDayMonthEngine(day)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_day_of_month; abi: c; }
-function hbHistoryDayOfMonthEngine(day: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_day_of_month, abi: c }
+function hbHistoryDayOfMonthEngine(day: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryDayOfMonth(day: I32) -> I32 {
@@ -236,8 +236,8 @@ function hbHistoryDayOfMonth(day: I32) -> I32 {
     return hbHistoryDayOfMonthEngine(day)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_day_weekday; abi: c; }
-function hbHistoryDayWeekdayEngine(day: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_day_weekday, abi: c }
+function hbHistoryDayWeekdayEngine(day: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryDayWeekday(day: I32) -> I32 {
@@ -247,8 +247,8 @@ function hbHistoryDayWeekday(day: I32) -> I32 {
     return hbHistoryDayWeekdayEngine(day)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_minute_of_day; abi: c; }
-function hbHistoryMinuteOfDayEngine(unixSeconds: Float) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_minute_of_day, abi: c }
+function hbHistoryMinuteOfDayEngine(unixSeconds: Float) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryMinuteOfDay(unixSeconds: Float) -> I32 {
@@ -258,8 +258,8 @@ function hbHistoryMinuteOfDay(unixSeconds: Float) -> I32 {
     return hbHistoryMinuteOfDayEngine(unixSeconds)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_forget_url; abi: c; }
-function hbHistoryForgetURLEngine(url: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_forget_url, abi: c }
+function hbHistoryForgetURLEngine(url: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryForgetURL(url: borrow String) {
@@ -270,8 +270,8 @@ function hbHistoryForgetURL(url: borrow String) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_forget_host; abi: c; }
-function hbHistoryForgetHostEngine(host: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_forget_host, abi: c }
+function hbHistoryForgetHostEngine(host: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryForgetHost(host: borrow String) {
@@ -282,8 +282,8 @@ function hbHistoryForgetHost(host: borrow String) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_history_forget_since; abi: c; }
-function hbHistoryForgetSinceEngine(since: Float) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_history_forget_since, abi: c }
+function hbHistoryForgetSinceEngine(since: Float) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbHistoryForgetSince(since: Float) {
@@ -296,8 +296,8 @@ function hbHistoryForgetSince(since: Float) {
 
 // --- Bookmarks ---------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_child_count; abi: c; }
-function hbBookmarkChildCountEngine(folderId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_child_count, abi: c }
+function hbBookmarkChildCountEngine(folderId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkChildCount(folderId: I32) -> I32 {
@@ -307,8 +307,8 @@ function hbBookmarkChildCount(folderId: I32) -> I32 {
     return hbBookmarkChildCountEngine(folderId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_child_at; abi: c; }
-function hbBookmarkChildAtEngine(folderId: I32, index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_child_at, abi: c }
+function hbBookmarkChildAtEngine(folderId: I32, index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkChildAt(folderId: I32, index: I32) -> I32 {
@@ -318,8 +318,8 @@ function hbBookmarkChildAt(folderId: I32, index: I32) -> I32 {
     return hbBookmarkChildAtEngine(folderId, index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_parent_of; abi: c; }
-function hbBookmarkParentOfEngine(nodeId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_parent_of, abi: c }
+function hbBookmarkParentOfEngine(nodeId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkParentOf(nodeId: I32) -> I32 {
@@ -329,8 +329,8 @@ function hbBookmarkParentOf(nodeId: I32) -> I32 {
     return hbBookmarkParentOfEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_index_of; abi: c; }
-function hbBookmarkIndexOfEngine(nodeId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_index_of, abi: c }
+function hbBookmarkIndexOfEngine(nodeId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkIndexOf(nodeId: I32) -> I32 {
@@ -340,8 +340,8 @@ function hbBookmarkIndexOf(nodeId: I32) -> I32 {
     return hbBookmarkIndexOfEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_is_folder; abi: c; }
-function hbBookmarkIsFolderEngine(nodeId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_is_folder, abi: c }
+function hbBookmarkIsFolderEngine(nodeId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkIsFolder(nodeId: I32) -> I32 {
@@ -351,8 +351,8 @@ function hbBookmarkIsFolder(nodeId: I32) -> I32 {
     return hbBookmarkIsFolderEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_depth; abi: c; }
-function hbBookmarkDepthEngine(nodeId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_depth, abi: c }
+function hbBookmarkDepthEngine(nodeId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkDepth(nodeId: I32) -> I32 {
@@ -362,8 +362,8 @@ function hbBookmarkDepth(nodeId: I32) -> I32 {
     return hbBookmarkDepthEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_leaf_count; abi: c; }
-function hbBookmarkLeafCountEngine(folderId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_leaf_count, abi: c }
+function hbBookmarkLeafCountEngine(folderId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkLeafCount(folderId: I32) -> I32 {
@@ -373,8 +373,8 @@ function hbBookmarkLeafCount(folderId: I32) -> I32 {
     return hbBookmarkLeafCountEngine(folderId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_title; abi: c; }
-function hbBookmarkTitleEngine(nodeId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_title, abi: c }
+function hbBookmarkTitleEngine(nodeId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkTitle(nodeId: I32) -> String {
@@ -384,8 +384,8 @@ function hbBookmarkTitle(nodeId: I32) -> String {
     return hbBookmarkTitleEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_url; abi: c; }
-function hbBookmarkURLEngine(nodeId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_url, abi: c }
+function hbBookmarkURLEngine(nodeId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkURL(nodeId: I32) -> String {
@@ -395,8 +395,8 @@ function hbBookmarkURL(nodeId: I32) -> String {
     return hbBookmarkURLEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_host; abi: c; }
-function hbBookmarkHostEngine(nodeId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_host, abi: c }
+function hbBookmarkHostEngine(nodeId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkHost(nodeId: I32) -> String {
@@ -406,8 +406,8 @@ function hbBookmarkHost(nodeId: I32) -> String {
     return hbBookmarkHostEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_added; abi: c; }
-function hbBookmarkAddedEngine(nodeId: I32) -> Float;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_added, abi: c }
+function hbBookmarkAddedEngine(nodeId: I32) -> Float
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkAdded(nodeId: I32) -> Float {
@@ -417,8 +417,8 @@ function hbBookmarkAdded(nodeId: I32) -> Float {
     return hbBookmarkAddedEngine(nodeId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_node_for_url; abi: c; }
-function hbBookmarkNodeForURLEngine(url: CString) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_node_for_url, abi: c }
+function hbBookmarkNodeForURLEngine(url: CString) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkNodeForURL(url: borrow String) -> I32 {
@@ -428,8 +428,8 @@ function hbBookmarkNodeForURL(url: borrow String) -> I32 {
     return hbBookmarkNodeForURLEngine(url)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_add; abi: c; }
-function hbBookmarkAddEngine(parentId: I32, index: I32, url: CString, title: CString) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_add, abi: c }
+function hbBookmarkAddEngine(parentId: I32, index: I32, url: CString, title: CString) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkAdd(parentId: I32, index: I32, url: borrow String, title: borrow String) -> I32 {
@@ -439,8 +439,8 @@ function hbBookmarkAdd(parentId: I32, index: I32, url: borrow String, title: bor
     return hbBookmarkAddEngine(parentId, index, url, title)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_add_folder; abi: c; }
-function hbBookmarkAddFolderEngine(parentId: I32, index: I32, title: CString) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_add_folder, abi: c }
+function hbBookmarkAddFolderEngine(parentId: I32, index: I32, title: CString) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkAddFolder(parentId: I32, index: I32, title: borrow String) -> I32 {
@@ -450,8 +450,8 @@ function hbBookmarkAddFolder(parentId: I32, index: I32, title: borrow String) ->
     return hbBookmarkAddFolderEngine(parentId, index, title)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_remove; abi: c; }
-function hbBookmarkRemoveEngine(nodeId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_remove, abi: c }
+function hbBookmarkRemoveEngine(nodeId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkRemove(nodeId: I32) {
@@ -462,8 +462,8 @@ function hbBookmarkRemove(nodeId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_rename; abi: c; }
-function hbBookmarkRenameEngine(nodeId: I32, title: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_rename, abi: c }
+function hbBookmarkRenameEngine(nodeId: I32, title: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkRename(nodeId: I32, title: borrow String) {
@@ -474,8 +474,8 @@ function hbBookmarkRename(nodeId: I32, title: borrow String) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_set_url; abi: c; }
-function hbBookmarkSetURLEngine(nodeId: I32, url: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_set_url, abi: c }
+function hbBookmarkSetURLEngine(nodeId: I32, url: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkSetURL(nodeId: I32, url: borrow String) {
@@ -486,8 +486,8 @@ function hbBookmarkSetURL(nodeId: I32, url: borrow String) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_move; abi: c; }
-function hbBookmarkMoveEngine(nodeId: I32, parentId: I32, index: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_move, abi: c }
+function hbBookmarkMoveEngine(nodeId: I32, parentId: I32, index: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkMove(nodeId: I32, parentId: I32, index: I32) {
@@ -498,8 +498,8 @@ function hbBookmarkMove(nodeId: I32, parentId: I32, index: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_bookmarks_toggle; abi: c; }
-function hbBookmarkToggleEngine(url: CString, title: CString) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_bookmarks_toggle, abi: c }
+function hbBookmarkToggleEngine(url: CString, title: CString) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbBookmarkToggle(url: borrow String, title: borrow String) -> I32 {
@@ -511,8 +511,8 @@ function hbBookmarkToggle(url: borrow String, title: borrow String) -> I32 {
 
 // --- Suggestions --------------------------------------------------------------
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestions_query; abi: c; }
-function hbSuggestionsQueryEngine(text: CString, limit: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestions_query, abi: c }
+function hbSuggestionsQueryEngine(text: CString, limit: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionsQuery(text: borrow String, limit: I32) -> I32 {
@@ -522,8 +522,8 @@ function hbSuggestionsQuery(text: borrow String, limit: I32) -> I32 {
     return hbSuggestionsQueryEngine(text, limit)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestion_kind; abi: c; }
-function hbSuggestionKindEngine(index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestion_kind, abi: c }
+function hbSuggestionKindEngine(index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionKind(index: I32) -> I32 {
@@ -533,8 +533,8 @@ function hbSuggestionKind(index: I32) -> I32 {
     return hbSuggestionKindEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestion_url; abi: c; }
-function hbSuggestionURLEngine(index: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestion_url, abi: c }
+function hbSuggestionURLEngine(index: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionURL(index: I32) -> String {
@@ -544,8 +544,8 @@ function hbSuggestionURL(index: I32) -> String {
     return hbSuggestionURLEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestion_title; abi: c; }
-function hbSuggestionTitleEngine(index: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestion_title, abi: c }
+function hbSuggestionTitleEngine(index: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionTitle(index: I32) -> String {
@@ -555,8 +555,8 @@ function hbSuggestionTitle(index: I32) -> String {
     return hbSuggestionTitleEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestion_host; abi: c; }
-function hbSuggestionHostEngine(index: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestion_host, abi: c }
+function hbSuggestionHostEngine(index: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionHost(index: I32) -> String {
@@ -566,8 +566,8 @@ function hbSuggestionHost(index: I32) -> String {
     return hbSuggestionHostEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestion_node; abi: c; }
-function hbSuggestionNodeEngine(index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestion_node, abi: c }
+function hbSuggestionNodeEngine(index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionNode(index: I32) -> I32 {
@@ -577,8 +577,8 @@ function hbSuggestionNode(index: I32) -> I32 {
     return hbSuggestionNodeEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestion_visit_count; abi: c; }
-function hbSuggestionVisitCountEngine(index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestion_visit_count, abi: c }
+function hbSuggestionVisitCountEngine(index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionVisitCount(index: I32) -> I32 {
@@ -588,8 +588,8 @@ function hbSuggestionVisitCount(index: I32) -> I32 {
     return hbSuggestionVisitCountEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_suggestion_last_visit; abi: c; }
-function hbSuggestionLastVisitEngine(index: I32) -> Float;
+@FFI.Extern { library: harmony_browser, symbol: hb_suggestion_last_visit, abi: c }
+function hbSuggestionLastVisitEngine(index: I32) -> Float
 
 // Guarded: a build with no engine answers without calling it.
 function hbSuggestionLastVisit(index: I32) -> Float {

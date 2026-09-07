@@ -133,18 +133,18 @@ function harmonyAllotmentSame(left: borrow HarmonyAllotment, right: borrow Harmo
 // A value copy, for a side that keeps what it was told.
 function harmonyAllotmentCopy(allotment: borrow HarmonyAllotment) -> HarmonyAllotment {
     return HarmonyAllotment {
-        role: allotment.role
-        region: harmonyRectCopy(allotment.region)
-        canvas: harmonyRectCopy(allotment.canvas)
+        role: allotment.role,
+        region: harmonyRectCopy(allotment.region),
+        canvas: harmonyRectCopy(allotment.canvas),
         scale: allotment.scale
     }
 }
 
 function harmonyRectCopy(rect: borrow HarmonyRect) -> HarmonyRect {
     return HarmonyRect {
-        x: rect.x
-        y: rect.y
-        width: rect.width
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
         height: rect.height
     }
 }
@@ -257,10 +257,10 @@ struct HarmonySurfaceNote {
 // be a surface the shell composited underneath the page it is floating over.
 function harmonyLayerForRole(role: borrow HarmonySurfaceRole) -> HarmonySurfaceLayer {
     match role {
-        Floating -> return HarmonySurfaceLayer.Overlay;
-        Sidebar -> return HarmonySurfaceLayer.Content;
-        Document -> return HarmonySurfaceLayer.Content;
-        Inspector -> return HarmonySurfaceLayer.Content;
+        Floating -> return HarmonySurfaceLayer.Overlay
+        Sidebar -> return HarmonySurfaceLayer.Content
+        Document -> return HarmonySurfaceLayer.Content
+        Inspector -> return HarmonySurfaceLayer.Content
     }
 }
 

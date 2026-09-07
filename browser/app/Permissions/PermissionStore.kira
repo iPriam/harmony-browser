@@ -147,8 +147,8 @@ function harmonyPermissionRemember(origin: borrow String, kind: borrow Permissio
                 keep = false
                 if decision != PermissionDecision.Ask {
                     next.append(PermissionGrant {
-                        origin: "" + origin
-                        kind: kind
+                        origin: "" + origin,
+                        kind: kind,
                         decision: decision
                     })
                     replaced = true
@@ -162,8 +162,8 @@ function harmonyPermissionRemember(origin: borrow String, kind: borrow Permissio
     if replaced == false {
         if decision != PermissionDecision.Ask {
             next.append(PermissionGrant {
-                origin: "" + origin
-                kind: kind
+                origin: "" + origin,
+                kind: kind,
                 decision: decision
             })
         }
@@ -263,8 +263,8 @@ function harmonyPermissionParse(text: borrow String) -> [PermissionGrant] {
                     if permissionDecisionIsKnown(decisionToken) {
                         if permissionOriginIsStorable(origin) {
                             grants.append(PermissionGrant {
-                                origin: "" + origin
-                                kind: permissionKindFromToken(kindToken)
+                                origin: "" + origin,
+                                kind: permissionKindFromToken(kindToken),
                                 decision: permissionDecisionFromToken(decisionToken)
                             })
                         }

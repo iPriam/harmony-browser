@@ -71,18 +71,18 @@ struct HarmonyShellSurfaces {
 
 function harmonyRoleCode(role: borrow HarmonySurfaceRole) -> Int {
     match role {
-        Sidebar -> return 0;
-        Document -> return 1;
-        Inspector -> return 2;
-        Floating -> return 3;
+        Sidebar -> return 0
+        Document -> return 1
+        Inspector -> return 2
+        Floating -> return 3
     }
 }
 
 function harmonyComponentCode(component: borrow HarmonyComponent) -> Int {
     match component {
-        Shell -> return 0;
-        Browser -> return 1;
-        Ai -> return 2;
+        Shell -> return 0
+        Browser -> return 1
+        Ai -> return 2
     }
 }
 
@@ -118,13 +118,13 @@ function harmonyShellSurfaceArrived(component: borrow HarmonyComponent, delivery
     harmonyShellSurfacesEnsure()
     var surfaces = nativeRecover<HarmonyShellSurfaces>(kiraUiStateSlotGet(harmonyShellSurfacesKey()))
     surfaces.pending.append(HarmonyPendingSurface {
-        handle: delivery.handle
-        component: component
-        role: note.surface.role
-        width: Int(note.surface.rect.width)
-        height: Int(note.surface.rect.height)
-        stride: note.surface.stride
-        modifier: note.surface.modifier
+        handle: delivery.handle,
+        component: component,
+        role: note.surface.role,
+        width: Int(note.surface.rect.width),
+        height: Int(note.surface.rect.height),
+        stride: note.surface.stride,
+        modifier: note.surface.modifier,
         generation: note.surface.generation
     })
     return
@@ -510,9 +510,9 @@ function harmonyShellRegionAt(x: Float, y: Float) -> HarmonyShellRegionHit {
         if regions[index].role != HarmonySurfaceRole.Floating {
             if x >= region.x && y >= region.y && x < region.x + region.width && y < region.y + region.height {
                 return HarmonyShellRegionHit {
-                    role: regions[index].role
-                    inside: true
-                    x: x - region.x
+                    role: regions[index].role,
+                    inside: true,
+                    x: x - region.x,
                     y: y - region.y
                 }
             }

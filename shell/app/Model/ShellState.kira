@@ -214,12 +214,12 @@ function harmonyLinkIsSettling(link: borrow HarmonyLink) -> Bool {
 
 function harmonyLinkStateCode(state: borrow HarmonyLinkState) -> Int {
     match state {
-        Absent -> return 0;
-        Idle -> return 1;
-        Starting -> return 2;
-        Ready -> return 3;
-        Refused -> return 4;
-        Lost -> return 5;
+        Absent -> return 0
+        Idle -> return 1
+        Starting -> return 2
+        Ready -> return 3
+        Refused -> return 4
+        Lost -> return 5
     }
 }
 
@@ -304,9 +304,9 @@ function harmonyShellRegions(viewport: borrow Size) -> [HarmonyAllotment] {
     let inspector = harmonyShellInspectorWidth(viewport.width)
     let document = viewport.width - sidebar - inspector
     let canvas = HarmonyRect {
-        x: 0.0
-        y: 0.0
-        width: viewport.width
+        x: 0.0,
+        y: 0.0,
+        width: viewport.width,
         height: viewport.height
     }
     // One per role this window has room for. The inspector is in the list only
@@ -315,9 +315,9 @@ function harmonyShellRegions(viewport: borrow Size) -> [HarmonyAllotment] {
     // allotted nothing would still have to decide what that meant.
     var regions: [HarmonyAllotment] = [
         HarmonyAllotment {
-            role: HarmonySurfaceRole.Document
-            region: HarmonyRect { x: sidebar, y: top, width: document, height: content }
-            canvas: harmonyRectCopy(canvas)
+            role: HarmonySurfaceRole.Document,
+            region: HarmonyRect { x: sidebar, y: top, width: document, height: content },
+            canvas: harmonyRectCopy(canvas),
             scale: harmonyShellScale()
         },
         // The overlay covers the WHOLE canvas, which is the point of it: a menu
@@ -325,9 +325,9 @@ function harmonyShellRegions(viewport: borrow Size) -> [HarmonyAllotment] {
         // clipped to the column it was opened from is a menu with its bottom
         // half missing.
         HarmonyAllotment {
-            role: HarmonySurfaceRole.Floating
-            region: harmonyRectCopy(canvas)
-            canvas: harmonyRectCopy(canvas)
+            role: HarmonySurfaceRole.Floating,
+            region: harmonyRectCopy(canvas),
+            canvas: harmonyRectCopy(canvas),
             scale: harmonyShellScale()
         }
     ]
@@ -338,17 +338,17 @@ function harmonyShellRegions(viewport: borrow Size) -> [HarmonyAllotment] {
     // anything.
     if sidebar > 0.0 {
         regions.append(HarmonyAllotment {
-            role: HarmonySurfaceRole.Sidebar
-            region: HarmonyRect { x: 0.0, y: top, width: sidebar, height: content }
-            canvas: harmonyRectCopy(canvas)
+            role: HarmonySurfaceRole.Sidebar,
+            region: HarmonyRect { x: 0.0, y: top, width: sidebar, height: content },
+            canvas: harmonyRectCopy(canvas),
             scale: harmonyShellScale()
         })
     }
     if inspector > 0.0 {
         regions.append(HarmonyAllotment {
-            role: HarmonySurfaceRole.Inspector
-            region: HarmonyRect { x: sidebar + document, y: top, width: inspector, height: content }
-            canvas: harmonyRectCopy(canvas)
+            role: HarmonySurfaceRole.Inspector,
+            region: HarmonyRect { x: sidebar + document, y: top, width: inspector, height: content },
+            canvas: harmonyRectCopy(canvas),
             scale: harmonyShellScale()
         })
     }
@@ -426,7 +426,7 @@ function harmonyShellColumns() -> NavigationSplitViewVisibility {
 function harmonyShellNewTab() {
     var out = IpcWriter {}
     encode_BrowserOpen(BrowserOpen {
-        address: ""
+        address: "",
         foreground: true
     }, out)
     HarmonyShell().tellBrowser(browserOpenMethod(), out.bytes)
@@ -464,12 +464,12 @@ function harmonyShellAi() -> HarmonyLink {
 // somebody to wait when they should be installing something.
 function harmonyLinkSummary(link: borrow HarmonyLink) -> String {
     match link.state {
-        Absent -> return "Not installed";
-        Idle -> return "Ready to start";
-        Starting -> return "Starting";
-        Ready -> return "Running";
-        Refused -> return "Version mismatch";
-        Lost -> return "Stopped";
+        Absent -> return "Not installed"
+        Idle -> return "Ready to start"
+        Starting -> return "Starting"
+        Ready -> return "Running"
+        Refused -> return "Version mismatch"
+        Lost -> return "Stopped"
     }
 }
 
@@ -479,22 +479,22 @@ function harmonyLinkIsWell(link: borrow HarmonyLink) -> Bool {
 
 function harmonyLinkInk(link: borrow HarmonyLink) -> PrimaryColor {
     match link.state {
-        Absent -> return PrimaryColor.Tertiary;
-        Idle -> return PrimaryColor.Secondary;
-        Starting -> return PrimaryColor.Accent;
-        Ready -> return PrimaryColor.Green;
-        Refused -> return PrimaryColor.Red;
-        Lost -> return PrimaryColor.Red;
+        Absent -> return PrimaryColor.Tertiary
+        Idle -> return PrimaryColor.Secondary
+        Starting -> return PrimaryColor.Accent
+        Ready -> return PrimaryColor.Green
+        Refused -> return PrimaryColor.Red
+        Lost -> return PrimaryColor.Red
     }
 }
 
 function harmonyLinkSymbol(link: borrow HarmonyLink) -> Symbol {
     match link.state {
-        Absent -> return Symbol.Arrow2Circlepath;
-        Idle -> return Symbol.Circle;
-        Starting -> return Symbol.Arrow2Circlepath;
-        Ready -> return Symbol.CheckmarkCircle;
-        Refused -> return Symbol.ExclamationmarkCircle;
-        Lost -> return Symbol.XmarkCircle;
+        Absent -> return Symbol.Arrow2Circlepath
+        Idle -> return Symbol.Circle
+        Starting -> return Symbol.Arrow2Circlepath
+        Ready -> return Symbol.CheckmarkCircle
+        Refused -> return Symbol.ExclamationmarkCircle
+        Lost -> return Symbol.XmarkCircle
     }
 }

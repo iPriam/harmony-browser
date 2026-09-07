@@ -83,12 +83,12 @@ construct NoSurfaceView() extends Widget {
 // What is missing, in three or four words.
 function noSurfaceHeadline() -> String {
     match harmonyShellBrowser().state {
-        Absent -> return "No web engine";
-        Idle -> return "Web engine ready";
-        Starting -> return "Starting the web engine";
-        Ready -> return "Waiting for the first page";
-        Refused -> return "Web engine out of date";
-        Lost -> return "The web engine stopped";
+        Absent -> return "No web engine"
+        Idle -> return "Web engine ready"
+        Starting -> return "Starting the web engine"
+        Ready -> return "Waiting for the first page"
+        Refused -> return "Web engine out of date"
+        Lost -> return "The web engine stopped"
     }
 }
 
@@ -96,11 +96,11 @@ function noSurfaceHeadline() -> String {
 function noSurfaceExplanation() -> String {
     let browser = harmonyShellBrowser()
     match browser.state {
-        Absent -> return "Install Harmony Browser beside this shell to open pages.";
-        Idle -> return "Harmony Browser is installed and has not started yet.";
-        Starting -> return "It will appear here as soon as it is ready.";
-        Ready -> return "Harmony Browser is running and has not sent a surface yet.";
-        Refused -> return browser.note;
-        Lost -> return browser.note;
+        Absent -> return "Install Harmony Browser beside this shell to open pages."
+        Idle -> return "Harmony Browser is installed and has not started yet."
+        Starting -> return "It will appear here as soon as it is ready."
+        Ready -> return "Harmony Browser is running and has not sent a surface yet."
+        Refused -> return browser.note
+        Lost -> return browser.note
     }
 }

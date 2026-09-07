@@ -48,21 +48,21 @@ function downloadStateFromCode(code: Int) -> DownloadState {
 // states, so a row shows exactly one set of controls.
 function downloadIsActive(state: DownloadState) -> Bool {
     match state {
-        Starting -> return true;
-        Running -> return true;
-        Finished -> return false;
-        Failed -> return false;
-        Cancelled -> return false;
+        Starting -> return true
+        Running -> return true
+        Finished -> return false
+        Failed -> return false
+        Cancelled -> return false
     }
 }
 
 function downloadIsFinished(state: DownloadState) -> Bool {
     match state {
-        Starting -> return false;
-        Running -> return false;
-        Finished -> return true;
-        Failed -> return false;
-        Cancelled -> return false;
+        Starting -> return false
+        Running -> return false
+        Finished -> return true
+        Failed -> return false
+        Cancelled -> return false
     }
 }
 
@@ -70,31 +70,31 @@ function downloadIsFinished(state: DownloadState) -> Bool {
 // again.
 function downloadIsStopped(state: DownloadState) -> Bool {
     match state {
-        Starting -> return false;
-        Running -> return false;
-        Finished -> return false;
-        Failed -> return true;
-        Cancelled -> return true;
+        Starting -> return false
+        Running -> return false
+        Finished -> return false
+        Failed -> return true
+        Cancelled -> return true
     }
 }
 
 function downloadSymbol(state: DownloadState) -> Symbol {
     match state {
-        Starting -> return Symbol.ArrowDownDoc;
-        Running -> return Symbol.ArrowDownDoc;
-        Finished -> return Symbol.CheckmarkCircle;
-        Failed -> return Symbol.ExclamationmarkCircle;
-        Cancelled -> return Symbol.SlashCircle;
+        Starting -> return Symbol.ArrowDownDoc
+        Running -> return Symbol.ArrowDownDoc
+        Finished -> return Symbol.CheckmarkCircle
+        Failed -> return Symbol.ExclamationmarkCircle
+        Cancelled -> return Symbol.SlashCircle
     }
 }
 
 function downloadSymbolColor(state: DownloadState) -> PrimaryColor {
     match state {
-        Starting -> return PrimaryColor.Secondary;
-        Running -> return PrimaryColor.Accent;
-        Finished -> return PrimaryColor.Green;
-        Failed -> return PrimaryColor.Red;
-        Cancelled -> return PrimaryColor.Tertiary;
+        Starting -> return PrimaryColor.Secondary
+        Running -> return PrimaryColor.Accent
+        Finished -> return PrimaryColor.Green
+        Failed -> return PrimaryColor.Red
+        Cancelled -> return PrimaryColor.Tertiary
     }
 }
 
@@ -107,14 +107,14 @@ function downloadRead(id: Int) -> Download {
     }
 
     return Download {
-        id: id
-        state: downloadStateFromCode(Int(downloadsNativeState(I32(id))))
-        fileName: downloadTextOf(id, downloadFieldFileName())
-        url: downloadTextOf(id, downloadFieldUrl())
-        path: downloadTextOf(id, downloadFieldPath())
-        mimeType: downloadTextOf(id, downloadFieldMimeType())
-        error: downloadTextOf(id, downloadFieldError())
-        completed: downloadTextOf(id, downloadFieldCompleted())
+        id: id,
+        state: downloadStateFromCode(Int(downloadsNativeState(I32(id)))),
+        fileName: downloadTextOf(id, downloadFieldFileName()),
+        url: downloadTextOf(id, downloadFieldUrl()),
+        path: downloadTextOf(id, downloadFieldPath()),
+        mimeType: downloadTextOf(id, downloadFieldMimeType()),
+        error: downloadTextOf(id, downloadFieldError()),
+        completed: downloadTextOf(id, downloadFieldCompleted()),
         total: downloadsNativeTotalBytes(I32(id))
     }
 }
@@ -219,7 +219,7 @@ function downloadDetailText(
     error: String
 ) -> String {
     match state {
-        Starting -> return "Starting";
+        Starting -> return "Starting"
         Running -> {
             if total <= 0 {
                 return downloadsFormatBytes(received)
@@ -241,6 +241,6 @@ function downloadDetailText(
             }
             return "Failed"
         }
-        Cancelled -> return "Cancelled";
+        Cancelled -> return "Cancelled"
     }
 }

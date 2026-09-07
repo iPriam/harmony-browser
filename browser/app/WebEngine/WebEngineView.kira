@@ -21,12 +21,12 @@ import KiraGraphics
 function harmonyWebEngineFrame(frame: borrow mut KiraGraphics.RenderFrame) {
     let pool = webAutoreleasePoolPush()
 
-    let app = webMsgSend(webObjcGetClass("NSApplication"), webSel("sharedApplication"))
+    let app: RawPtr = webMsgSend(webObjcGetClass("NSApplication"), webSel("sharedApplication"))
     if pointerIsNull(app) {
         webAutoreleasePoolPop(pool)
         return
     }
-    let window = webMsgSend(app, webSel("keyWindow"))
+    let window: RawPtr = webMsgSend(app, webSel("keyWindow"))
     if pointerIsNull(window) {
         // No key window yet: the first frames after launch, or the app in the
         // background. There is nothing to size and nothing new to read.
@@ -43,17 +43,17 @@ function harmonyWebEngineFrame(frame: borrow mut KiraGraphics.RenderFrame) {
 
     // What WebKit did on its own schedule while the last frame was being shown.
     // distantPast drains what is ready and waits for nothing.
-    let runLoop = webMsgSend(webObjcGetClass("NSRunLoop"), webSel("mainRunLoop"))
+    let runLoop: RawPtr = webMsgSend(webObjcGetClass("NSRunLoop"), webSel("mainRunLoop"))
     if !pointerIsNull(runLoop) {
-        let mode = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSDefaultRunLoopMode")
-        let date = webMsgSend(webObjcGetClass("NSDate"), webSel("distantPast"))
-        let ignored = webMsgSendRunMode(runLoop, webSel("runMode:beforeDate:"), mode, date)
+        let mode: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSDefaultRunLoopMode")
+        let date: RawPtr = webMsgSend(webObjcGetClass("NSDate"), webSel("distantPast"))
+        let ignored: Bool = webMsgSend(runLoop, webSel("runMode:beforeDate:"), mode, date)
     }
 
     if !pointerIsNull(view) {
         // The page's rectangle, applied once by the one pass that measured it.
         let rect = webEnginePageRect(frame)
-        webMsgSendVoidRect(view, webSel("setFrame:"), Float(rect.x), Float(rect.y), Float(rect.width), Float(rect.height))
+        webMsgSend(view, webSel("setFrame:"), Float(rect.x), Float(rect.y), Float(rect.width), Float(rect.height))
     }
 
     webEngineApplyCommand(view, justAttached)
@@ -68,9 +68,9 @@ function harmonyWebEngineFrame(frame: borrow mut KiraGraphics.RenderFrame) {
     // document it names -- the same beat `harmonyChromeFrame` keeps on Windows,
     // reached through the runtime because the chrome's own seam is the archive's.
     let title = harmonyChromeWindowTitle()
-    let nsTitle = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), title)
+    let nsTitle: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), title)
     if !pointerIsNull(nsTitle) {
-        webMsgSendVoidP(window, webSel("setTitle:"), nsTitle)
+        webMsgSend(window, webSel("setTitle:"), nsTitle)
     }
 
     webAutoreleasePoolPop(pool)
@@ -84,18 +84,18 @@ function harmonyWebEngineFrame(frame: borrow mut KiraGraphics.RenderFrame) {
 // view). The process is ending, so Apple reclaims everything it held beside it.
 function harmonyWebEngineShutdown() {
     let pool = webAutoreleasePoolPush()
-    let app = webMsgSend(webObjcGetClass("NSApplication"), webSel("sharedApplication"))
+    let app: RawPtr = webMsgSend(webObjcGetClass("NSApplication"), webSel("sharedApplication"))
     if !pointerIsNull(app) {
         let view = webObjcGetAssociatedObject(app, webEngineViewKey())
         let watcher = webObjcGetAssociatedObject(app, webEngineObserverKey())
         if !pointerIsNull(view) && !pointerIsNull(watcher) {
-            let keyPath = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "estimatedProgress")
+            let keyPath: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "estimatedProgress")
             if !pointerIsNull(keyPath) {
-                webMsgSendVoidPP(view, webSel("removeObserver:forKeyPath:"), watcher, keyPath)
+                webMsgSend(view, webSel("removeObserver:forKeyPath:"), watcher, keyPath)
             }
         }
         if !pointerIsNull(view) {
-            webMsgSendVoid(view, webSel("removeFromSuperview"))
+            webMsgSend(view, webSel("removeFromSuperview"))
         }
     }
     webAutoreleasePoolPop(pool)
@@ -109,13 +109,13 @@ function harmonyWebEngineShutdown() {
 // find them. The first load is the home URL, or whatever was asked for before
 // there was a view to ask for.
 function webEngineAttach(window: RawPtr, frame: borrow mut KiraGraphics.RenderFrame) -> RawPtr {
-    let content = webMsgSend(window, webSel("contentView"))
+    let content: RawPtr = webMsgSend(window, webSel("contentView"))
     if pointerIsNull(content) {
         return nullPointer()
     }
 
     let configurationClass = webObjcGetClass("WKWebViewConfiguration")
-    let config = webMsgSend(webMsgSend(configurationClass, webSel("alloc")), webSel("init"))
+    let config: RawPtr = webMsgSend(webMsgSend(configurationClass, webSel("alloc")), webSel("init"))
     if pointerIsNull(config) {
         return nullPointer()
     }
@@ -123,7 +123,7 @@ function webEngineAttach(window: RawPtr, frame: borrow mut KiraGraphics.RenderFr
 
     let viewClass = webObjcGetClass("WKWebView")
     let rect = webEnginePageRect(frame)
-    let view = webMsgSendInitWebView(
+    let view: RawPtr = webMsgSend(
         webMsgSend(viewClass, webSel("alloc")),
         webSel("initWithFrame:configuration:"),
         Float(rect.x),
@@ -142,20 +142,20 @@ function webEngineAttach(window: RawPtr, frame: borrow mut KiraGraphics.RenderFr
     // the current macOS Safari shape, so a page renders for this browser the
     // way it renders for the platform's own.
     let agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15"
-    let nsAgent = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), agent)
+    let nsAgent: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), agent)
     if !pointerIsNull(nsAgent) {
-        webMsgSendVoidP(view, webSel("setCustomUserAgent:"), nsAgent)
+        webMsgSend(view, webSel("setCustomUserAgent:"), nsAgent)
     }
 
     // Width and height sizable: during a live resize AppKit stretches the page
     // itself, and the next frame's setFrame settles the exact rectangle once
     // the layout has caught up -- the same division of labour the Windows host
     // keeps between WM_SIZE and the per-frame measurement.
-    webMsgSendVoidU(view, webSel("setAutoresizingMask:"), U64(18))
+    webMsgSend(view, webSel("setAutoresizingMask:"), U64(18))
 
-    webMsgSendVoidP(content, webSel("addSubview:"), view)
+    webMsgSend(content, webSel("addSubview:"), view)
 
-    let app = webMsgSend(webObjcGetClass("NSApplication"), webSel("sharedApplication"))
+    let app: RawPtr = webMsgSend(webObjcGetClass("NSApplication"), webSel("sharedApplication"))
     webObjcSetAssociatedObject(app, webEngineViewKey(), view, U64(1))
     webObjcSetAssociatedObject(app, webEngineConfigurationKey(), config, U64(1))
 
@@ -170,9 +170,9 @@ function webEngineAttach(window: RawPtr, frame: borrow mut KiraGraphics.RenderFr
         }
     }
     if !pointerIsNull(watcher) {
-        let keyPath = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "estimatedProgress")
+        let keyPath: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "estimatedProgress")
         if !pointerIsNull(keyPath) {
-            webMsgSendAddObserver(view, webSel("addObserver:forKeyPath:options:context:"), watcher, keyPath, U64(1), nullPointer())
+            webMsgSend(view, webSel("addObserver:forKeyPath:options:context:"), watcher, keyPath, U64(1), nullPointer())
         }
     }
 
@@ -232,13 +232,13 @@ function webProgressImp(selfObj: RawPtr, cmd: RawPtr, keyPath: RawPtr, object: R
     let pool = webAutoreleasePoolPush()
     var value = 0.0
     if !pointerIsNull(change) {
-        let key = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "new")
+        let key: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "new")
         if !pointerIsNull(key) {
-            let boxed = webMsgSendP(change, webSel("objectForKey:"), key)
+            let boxed: RawPtr = webMsgSend(change, webSel("objectForKey:"), key)
             if !pointerIsNull(boxed) {
-                let spelled = webMsgSend(boxed, webSel("stringValue"))
+                let spelled: RawPtr = webMsgSend(boxed, webSel("stringValue"))
                 if !pointerIsNull(spelled) {
-                    value = webParseProgress(webMsgSendUtf8(spelled, webSel("UTF8String")))
+                    value = webParseProgress(webMsgSend(spelled, webSel("UTF8String")))
                 }
             }
         }
@@ -259,31 +259,31 @@ function webProgressImp(selfObj: RawPtr, cmd: RawPtr, keyPath: RawPtr, object: R
 // Sites set their own cookies the moment a person actually consents; this
 // only stops the empty profile from answering for them with 2010.
 function webEngineSeedConsentCookie(config: RawPtr) {
-    let store = webMsgSend(webMsgSend(config, webSel("websiteDataStore")), webSel("httpCookieStore"))
+    let store: RawPtr = webMsgSend(webMsgSend(config, webSel("websiteDataStore")), webSel("httpCookieStore"))
     if pointerIsNull(store) {
         return
     }
-    let dict = webMsgSend(webObjcGetClass("NSMutableDictionary"), webSel("dictionary"))
+    let dict: RawPtr = webMsgSend(webObjcGetClass("NSMutableDictionary"), webSel("dictionary"))
     if pointerIsNull(dict) {
         return
     }
-    let name = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookieName")
-    let nameValue = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "SOCS")
-    let valueKey = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookieValue")
-    let value = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "CAISHAgBEhJnd3NfMjAyMzA4MTAtMF9SQzIaAmZyIAEaBgiA_LyaBg")
-    let domainKey = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookieDomain")
-    let domain = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), ".google.com")
-    let pathKey = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookiePath")
-    let path = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "/")
-    webMsgSendVoidPP(dict, webSel("setObject:forKey:"), nameValue, name)
-    webMsgSendVoidPP(dict, webSel("setObject:forKey:"), value, valueKey)
-    webMsgSendVoidPP(dict, webSel("setObject:forKey:"), domain, domainKey)
-    webMsgSendVoidPP(dict, webSel("setObject:forKey:"), path, pathKey)
-    let cookie = webMsgSendP(webObjcGetClass("NSHTTPCookie"), webSel("cookieWithProperties:"), dict)
+    let name: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookieName")
+    let nameValue: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "SOCS")
+    let valueKey: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookieValue")
+    let value: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "CAISHAgBEhJnd3NfMjAyMzA4MTAtMF9SQzIaAmZyIAEaBgiA_LyaBg")
+    let domainKey: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookieDomain")
+    let domain: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), ".google.com")
+    let pathKey: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "NSHTTPCookiePath")
+    let path: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "/")
+    webMsgSend(dict, webSel("setObject:forKey:"), nameValue, name)
+    webMsgSend(dict, webSel("setObject:forKey:"), value, valueKey)
+    webMsgSend(dict, webSel("setObject:forKey:"), domain, domainKey)
+    webMsgSend(dict, webSel("setObject:forKey:"), path, pathKey)
+    let cookie: RawPtr = webMsgSend(webObjcGetClass("NSHTTPCookie"), webSel("cookieWithProperties:"), dict)
     if pointerIsNull(cookie) {
         return
     }
-    webMsgSendVoidPP(store, webSel("setCookie:completionHandler:"), cookie, nullPointer())
+    webMsgSend(store, webSel("setCookie:completionHandler:"), cookie, nullPointer())
     return
 }
 
@@ -329,9 +329,9 @@ function webEnginePageRect(frame: borrow mut KiraGraphics.RenderFrame) -> WebEng
     // AppKit measures y upward from the bottom of the content view; the inset
     // is measured down from its top, which is the flip applied exactly here.
     return WebEngineRect {
-        x: leading
-        y: height - top - pageHeight
-        width: pageWidth
+        x: leading,
+        y: height - top - pageHeight,
+        width: pageWidth,
         height: pageHeight
     }
 }
@@ -361,19 +361,19 @@ function webEngineApplyCommand(view: RawPtr, justAttached: Bool) {
         return
     }
     if taken == 2 {
-        webMsgSendVoid(view, webSel("reload"))
+        webMsgSend(view, webSel("reload"))
         return
     }
     if taken == 3 {
-        webMsgSendVoid(view, webSel("stopLoading"))
+        webMsgSend(view, webSel("stopLoading"))
         return
     }
     if taken == 4 {
-        webMsgSendVoid(view, webSel("goBack"))
+        webMsgSend(view, webSel("goBack"))
         return
     }
     if taken == 5 {
-        webMsgSendVoid(view, webSel("goForward"))
+        webMsgSend(view, webSel("goForward"))
         return
     }
     return
@@ -388,19 +388,19 @@ function webEngineLoad(view: RawPtr, url: borrow String) {
     if pointerIsNull(view) || url.count == 0 {
         return
     }
-    let nsString = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), url)
+    let nsString: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), url)
     if pointerIsNull(nsString) {
         return
     }
-    let nsURL = webMsgSendP(webObjcGetClass("NSURL"), webSel("URLWithString:"), nsString)
+    let nsURL: RawPtr = webMsgSend(webObjcGetClass("NSURL"), webSel("URLWithString:"), nsString)
     if pointerIsNull(nsURL) {
         return
     }
-    let request = webMsgSendP(webObjcGetClass("NSURLRequest"), webSel("requestWithURL:"), nsURL)
+    let request: RawPtr = webMsgSend(webObjcGetClass("NSURLRequest"), webSel("requestWithURL:"), nsURL)
     if pointerIsNull(request) {
         return
     }
-    webMsgSendVoidP(view, webSel("loadRequest:"), request)
+    webMsgSend(view, webSel("loadRequest:"), request)
     return
 }
 
@@ -414,9 +414,9 @@ function webEnginePublishFrom(view: RawPtr) {
     var url = ""
     var committed = ""
     var provisional = ""
-    let nsURL = webMsgSend(view, webSel("URL"))
+    let nsURL: RawPtr = webMsgSend(view, webSel("URL"))
     if !pointerIsNull(nsURL) {
-        let absolute = webMsgSend(nsURL, webSel("absoluteString"))
+        let absolute: RawPtr = webMsgSend(nsURL, webSel("absoluteString"))
         if !pointerIsNull(absolute) {
             committed = webNSStringText(absolute)
             provisional = committed
@@ -425,19 +425,19 @@ function webEnginePublishFrom(view: RawPtr) {
     }
 
     var pageTitle = ""
-    let nsTitle = webMsgSend(view, webSel("title"))
+    let nsTitle: RawPtr = webMsgSend(view, webSel("title"))
     if !pointerIsNull(nsTitle) {
         pageTitle = webNSStringText(nsTitle)
     }
 
-    let loading = webMsgSendBool(view, webSel("isLoading"))
+    let loading: Bool = webMsgSend(view, webSel("isLoading"))
 
     // Progress is absent on purpose: it arrives over KVO while a load runs
     // (`webProgressImp`), and the snapshot keeps the last number that arrived.
     // This pass publishes everything the view can be ASKED, and nothing it has
     // to be told about twice.
-    let back = webMsgSendBool(view, webSel("canGoBack"))
-    let forward = webMsgSendBool(view, webSel("canGoForward"))
+    let back: Bool = webMsgSend(view, webSel("canGoBack"))
+    let forward: Bool = webMsgSend(view, webSel("canGoForward"))
 
     HarmonyWebEngine().publish(true, move url, move committed, move provisional, move pageTitle, loading, back, forward)
 
@@ -456,7 +456,7 @@ function webNSStringText(value: RawPtr) -> String {
     if pointerIsNull(value) {
         return ""
     }
-    return webMsgSendUtf8(value, webSel("UTF8String"))
+    return webMsgSend(value, webSel("UTF8String"))
 }
 
 // NSNumber spells a double the way printf does. Progress lives between 0 and 1,

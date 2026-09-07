@@ -103,8 +103,8 @@ struct AddressSuggestion {
 function suggestionDetail(suggestion: borrow AddressSuggestion) -> String {
     let address = harmonyNavigationDisplayAddress(suggestion.url)
     match suggestion.kind {
-        Typed -> return address;
-        Bookmark -> return address;
+        Typed -> return address
+        Bookmark -> return address
         History -> {
             if suggestion.visitCount > 1 {
                 return address + " · " + String(suggestion.visitCount) + " visits"
@@ -123,17 +123,17 @@ function suggestionKindFromCode(code: Int) -> SuggestionKind {
 
 function suggestionSymbol(kind: SuggestionKind) -> Symbol {
     match kind {
-        Typed -> return Symbol.ArrowRight;
-        Bookmark -> return Symbol.Bookmark;
-        History -> return Symbol.ArrowCounterclockwise;
+        Typed -> return Symbol.ArrowRight
+        Bookmark -> return Symbol.Bookmark
+        History -> return Symbol.ArrowCounterclockwise
     }
 }
 
 function suggestionInk(kind: SuggestionKind) -> PrimaryColor {
     match kind {
-        Typed -> return PrimaryColor.Accent;
-        Bookmark -> return PrimaryColor.Yellow;
-        History -> return PrimaryColor.Secondary;
+        Typed -> return PrimaryColor.Accent
+        Bookmark -> return PrimaryColor.Yellow
+        History -> return PrimaryColor.Secondary
     }
 }
 

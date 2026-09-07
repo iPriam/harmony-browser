@@ -36,8 +36,8 @@ struct PermissionGrant {
 // rather than by moving elements between two arrays.
 function permissionGrantCopy(grant: borrow PermissionGrant) -> PermissionGrant {
     return PermissionGrant {
-        origin: "" + grant.origin
-        kind: grant.kind
+        origin: "" + grant.origin,
+        kind: grant.kind,
         decision: grant.decision
     }
 }
@@ -45,12 +45,12 @@ function permissionGrantCopy(grant: borrow PermissionGrant) -> PermissionGrant {
 // The numbers the native bridge speaks, from harmony_permissions.h.
 function permissionKindCode(kind: PermissionKind) -> Int {
     match kind {
-        Geolocation -> return 1;
-        Notifications -> return 2;
-        Camera -> return 3;
-        Microphone -> return 4;
-        CameraAndMicrophone -> return 5;
-        ScreenCapture -> return 6;
+        Geolocation -> return 1
+        Notifications -> return 2
+        Camera -> return 3
+        Microphone -> return 4
+        CameraAndMicrophone -> return 5
+        ScreenCapture -> return 6
     }
 }
 
@@ -75,9 +75,9 @@ function permissionKindFromCode(code: Int) -> PermissionKind {
 
 function permissionDecisionCode(decision: borrow PermissionDecision) -> Int {
     match decision {
-        Ask -> return 0;
-        Allow -> return 1;
-        Deny -> return 2;
+        Ask -> return 0
+        Allow -> return 1
+        Deny -> return 2
     }
 }
 
@@ -98,20 +98,20 @@ function permissionStoredKinds() -> [PermissionKind] {
 // neighbour's.
 function permissionKindToken(kind: borrow PermissionKind) -> String {
     match kind {
-        Geolocation -> return "geolocation";
-        Notifications -> return "notifications";
-        Camera -> return "camera";
-        Microphone -> return "microphone";
-        CameraAndMicrophone -> return "camera-and-microphone";
-        ScreenCapture -> return "screen-capture";
+        Geolocation -> return "geolocation"
+        Notifications -> return "notifications"
+        Camera -> return "camera"
+        Microphone -> return "microphone"
+        CameraAndMicrophone -> return "camera-and-microphone"
+        ScreenCapture -> return "screen-capture"
     }
 }
 
 function permissionDecisionToken(decision: PermissionDecision) -> String {
     match decision {
-        Ask -> return "ask";
-        Allow -> return "allow";
-        Deny -> return "deny";
+        Ask -> return "ask"
+        Allow -> return "allow"
+        Deny -> return "deny"
     }
 }
 
@@ -153,24 +153,24 @@ function permissionDecisionFromToken(token: borrow String) -> PermissionDecision
 
 function permissionKindTitle(kind: PermissionKind) -> String {
     match kind {
-        Geolocation -> return "Location";
-        Notifications -> return "Notifications";
-        Camera -> return "Camera";
-        Microphone -> return "Microphone";
-        CameraAndMicrophone -> return "Camera and Microphone";
-        ScreenCapture -> return "Screen Sharing";
+        Geolocation -> return "Location"
+        Notifications -> return "Notifications"
+        Camera -> return "Camera"
+        Microphone -> return "Microphone"
+        CameraAndMicrophone -> return "Camera and Microphone"
+        ScreenCapture -> return "Screen Sharing"
     }
 }
 
 // The sentence the prompt puts after the site's name.
 function permissionKindRequestText(kind: PermissionKind) -> String {
     match kind {
-        Geolocation -> return "wants to know your location";
-        Notifications -> return "wants to send you notifications";
-        Camera -> return "wants to use your camera";
-        Microphone -> return "wants to use your microphone";
-        CameraAndMicrophone -> return "wants to use your camera and microphone";
-        ScreenCapture -> return "wants to share your screen";
+        Geolocation -> return "wants to know your location"
+        Notifications -> return "wants to send you notifications"
+        Camera -> return "wants to use your camera"
+        Microphone -> return "wants to use your microphone"
+        CameraAndMicrophone -> return "wants to use your camera and microphone"
+        ScreenCapture -> return "wants to share your screen"
     }
 }
 
@@ -179,39 +179,39 @@ function permissionKindRequestText(kind: PermissionKind) -> String {
 // is laid out on one line here, so a sentence that runs long runs off the card.
 function permissionKindDetailText(kind: PermissionKind) -> String {
     match kind {
-        Geolocation -> return "It will see where you are while you use it.";
-        Notifications -> return "It can show messages while it is not open.";
-        Camera -> return "It will see through your camera while in use.";
-        Microphone -> return "It will hear your microphone while in use.";
-        CameraAndMicrophone -> return "It will see and hear you while you use it.";
-        ScreenCapture -> return "It will see everything you share with it.";
+        Geolocation -> return "It will see where you are while you use it."
+        Notifications -> return "It can show messages while it is not open."
+        Camera -> return "It will see through your camera while in use."
+        Microphone -> return "It will hear your microphone while in use."
+        CameraAndMicrophone -> return "It will see and hear you while you use it."
+        ScreenCapture -> return "It will see everything you share with it."
     }
 }
 
 function permissionKindSymbol(kind: PermissionKind) -> Symbol {
     match kind {
-        Geolocation -> return Symbol.MapPin;
-        Notifications -> return Symbol.Bell;
-        Camera -> return Symbol.Camera;
-        Microphone -> return Symbol.Mic;
-        CameraAndMicrophone -> return Symbol.VideoCamera;
-        ScreenCapture -> return Symbol.DeviceDesktop;
+        Geolocation -> return Symbol.MapPin
+        Notifications -> return Symbol.Bell
+        Camera -> return Symbol.Camera
+        Microphone -> return Symbol.Mic
+        CameraAndMicrophone -> return Symbol.VideoCamera
+        ScreenCapture -> return Symbol.DeviceDesktop
     }
 }
 
 function permissionDecisionLabel(decision: PermissionDecision) -> String {
     match decision {
-        Ask -> return "Ask";
-        Allow -> return "Allowed";
-        Deny -> return "Blocked";
+        Ask -> return "Ask"
+        Allow -> return "Allowed"
+        Deny -> return "Blocked"
     }
 }
 
 function permissionDecisionColor(decision: PermissionDecision) -> PrimaryColor {
     match decision {
-        Ask -> return PrimaryColor.Secondary;
-        Allow -> return PrimaryColor.Green;
-        Deny -> return PrimaryColor.Red;
+        Ask -> return PrimaryColor.Secondary
+        Allow -> return PrimaryColor.Green
+        Deny -> return PrimaryColor.Red
     }
 }
 

@@ -41,17 +41,17 @@ function harmonyNavigationPage(tab: Int = 0) -> NavigationPage {
     }
 
     return NavigationPage {
-        tab: id
-        slot: Int(hbNavTabSlot(id))
-        url: hbNavURL(id)
-        committedURL: hbNavCommittedURL(id)
-        provisionalURL: hbNavProvisionalURL(id)
-        title: hbNavTitle(id)
-        progress: hbNavProgress(id)
-        isLoading: hbNavIsLoading(id) != 0
-        canGoBack: hbNavCanGoBack(id) != 0
-        canGoForward: hbNavCanGoForward(id) != 0
-        errorCode: Int(hbNavErrorCode(id))
+        tab: id,
+        slot: Int(hbNavTabSlot(id)),
+        url: hbNavURL(id),
+        committedURL: hbNavCommittedURL(id),
+        provisionalURL: hbNavProvisionalURL(id),
+        title: hbNavTitle(id),
+        progress: hbNavProgress(id),
+        isLoading: hbNavIsLoading(id) != 0,
+        canGoBack: hbNavCanGoBack(id) != 0,
+        canGoForward: hbNavCanGoForward(id) != 0,
+        errorCode: Int(hbNavErrorCode(id)),
         errorText: hbNavErrorText(id)
     }
 }
@@ -86,9 +86,9 @@ function harmonyNavigationOpenPages() -> [NavigationPage] {
 // history menu costs one read per row it shows and no more.
 function harmonyNavigationHistoryEntry(tab: Int, index: Int, current: Int) -> NavigationHistoryEntry {
     return NavigationHistoryEntry {
-        index: index
-        url: hbNavHistoryURL(tab, index)
-        title: hbNavHistoryTitle(tab, index)
+        index: index,
+        url: hbNavHistoryURL(tab, index),
+        title: hbNavHistoryTitle(tab, index),
         isCurrent: index == current
     }
 }

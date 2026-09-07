@@ -12,8 +12,8 @@ import KiraGraphics
 // Joining the wrapper to the page registry is the browser's host's, because it
 // has to happen before that registry creates its first page and five other
 // systems have the same requirement.
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_shutdown; abi: c; }
-function dialogsShutdownNativeEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_shutdown, abi: c }
+function dialogsShutdownNativeEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsShutdownNative() {
@@ -24,8 +24,8 @@ function dialogsShutdownNative() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_frame; abi: c; }
-function dialogsFrameNativeEngine(hostWindow: RawPtr, hostOverlay: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_frame, abi: c }
+function dialogsFrameNativeEngine(hostWindow: RawPtr, hostOverlay: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsFrameNative(hostWindow: RawPtr, hostOverlay: I32) -> I32 {
@@ -35,8 +35,8 @@ function dialogsFrameNative(hostWindow: RawPtr, hostOverlay: I32) -> I32 {
     return dialogsFrameNativeEngine(hostWindow, hostOverlay)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_request_kind; abi: c; }
-function dialogsRequestKindEngine(requestId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_request_kind, abi: c }
+function dialogsRequestKindEngine(requestId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRequestKind(requestId: I32) -> I32 {
@@ -46,8 +46,8 @@ function dialogsRequestKind(requestId: I32) -> I32 {
     return dialogsRequestKindEngine(requestId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_request_flags; abi: c; }
-function dialogsRequestFlagsEngine(requestId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_request_flags, abi: c }
+function dialogsRequestFlagsEngine(requestId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRequestFlags(requestId: I32) -> I32 {
@@ -57,8 +57,8 @@ function dialogsRequestFlags(requestId: I32) -> I32 {
     return dialogsRequestFlagsEngine(requestId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_request_code; abi: c; }
-function dialogsRequestCodeEngine(requestId: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_request_code, abi: c }
+function dialogsRequestCodeEngine(requestId: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRequestCode(requestId: I32) -> I32 {
@@ -68,8 +68,8 @@ function dialogsRequestCode(requestId: I32) -> I32 {
     return dialogsRequestCodeEngine(requestId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_request_message; abi: c; }
-function dialogsRequestMessageEngine(requestId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_request_message, abi: c }
+function dialogsRequestMessageEngine(requestId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRequestMessage(requestId: I32) -> String {
@@ -79,8 +79,8 @@ function dialogsRequestMessage(requestId: I32) -> String {
     return dialogsRequestMessageEngine(requestId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_request_origin; abi: c; }
-function dialogsRequestOriginEngine(requestId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_request_origin, abi: c }
+function dialogsRequestOriginEngine(requestId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRequestOrigin(requestId: I32) -> String {
@@ -90,8 +90,8 @@ function dialogsRequestOrigin(requestId: I32) -> String {
     return dialogsRequestOriginEngine(requestId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_request_default_value; abi: c; }
-function dialogsRequestDefaultValueEngine(requestId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_request_default_value, abi: c }
+function dialogsRequestDefaultValueEngine(requestId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRequestDefaultValue(requestId: I32) -> String {
@@ -101,8 +101,8 @@ function dialogsRequestDefaultValue(requestId: I32) -> String {
     return dialogsRequestDefaultValueEngine(requestId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_request_detail; abi: c; }
-function dialogsRequestDetailEngine(requestId: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_request_detail, abi: c }
+function dialogsRequestDetailEngine(requestId: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRequestDetail(requestId: I32) -> String {
@@ -112,8 +112,8 @@ function dialogsRequestDetail(requestId: I32) -> String {
     return dialogsRequestDetailEngine(requestId)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_respond_accept; abi: c; }
-function dialogsRespondAcceptEngine(requestId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_respond_accept, abi: c }
+function dialogsRespondAcceptEngine(requestId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRespondAccept(requestId: I32) {
@@ -124,8 +124,8 @@ function dialogsRespondAccept(requestId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_respond_dismiss; abi: c; }
-function dialogsRespondDismissEngine(requestId: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_respond_dismiss, abi: c }
+function dialogsRespondDismissEngine(requestId: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRespondDismiss(requestId: I32) {
@@ -136,8 +136,8 @@ function dialogsRespondDismiss(requestId: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_respond_text; abi: c; }
-function dialogsRespondTextEngine(requestId: I32, text: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_respond_text, abi: c }
+function dialogsRespondTextEngine(requestId: I32, text: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRespondText(requestId: I32, text: borrow String) {
@@ -148,8 +148,8 @@ function dialogsRespondText(requestId: I32, text: borrow String) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_respond_credential; abi: c; }
-function dialogsRespondCredentialEngine(requestId: I32, user: CString, password: CString, remember: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_respond_credential, abi: c }
+function dialogsRespondCredentialEngine(requestId: I32, user: CString, password: CString, remember: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRespondCredential(requestId: I32, user: borrow String, password: borrow String, remember: I32) {
@@ -160,8 +160,8 @@ function dialogsRespondCredential(requestId: I32, user: borrow String, password:
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_respond_trust; abi: c; }
-function dialogsRespondTrustEngine(requestId: I32, remember: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_respond_trust, abi: c }
+function dialogsRespondTrustEngine(requestId: I32, remember: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsRespondTrust(requestId: I32, remember: I32) {
@@ -172,8 +172,8 @@ function dialogsRespondTrust(requestId: I32, remember: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_dialogs_error; abi: c; }
-function dialogsErrorEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_dialogs_error, abi: c }
+function dialogsErrorEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function dialogsError() -> String {

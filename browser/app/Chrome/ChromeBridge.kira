@@ -4,8 +4,8 @@ import KiraGraphics
 // title bar, and how large the client area the page's window is placed inside
 // really is. Both are the host window's, and the tree draws inside that window
 // rather than owning it.
-@FFI.Extern { library: harmony_browser; symbol: hb_chrome_set_window_title; abi: c; }
-function chromeSetWindowTitleEngine(window: RawPtr, title: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_chrome_set_window_title, abi: c }
+function chromeSetWindowTitleEngine(window: RawPtr, title: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function chromeSetWindowTitle(window: RawPtr, title: borrow String) {
@@ -16,8 +16,8 @@ function chromeSetWindowTitle(window: RawPtr, title: borrow String) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_chrome_client_width; abi: c; }
-function chromeClientWidthEngine(window: RawPtr) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_chrome_client_width, abi: c }
+function chromeClientWidthEngine(window: RawPtr) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function chromeClientWidth(window: RawPtr) -> I32 {
@@ -27,8 +27,8 @@ function chromeClientWidth(window: RawPtr) -> I32 {
     return chromeClientWidthEngine(window)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_chrome_client_height; abi: c; }
-function chromeClientHeightEngine(window: RawPtr) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_chrome_client_height, abi: c }
+function chromeClientHeightEngine(window: RawPtr) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function chromeClientHeight(window: RawPtr) -> I32 {

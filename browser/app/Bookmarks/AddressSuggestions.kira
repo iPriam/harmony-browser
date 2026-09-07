@@ -105,8 +105,8 @@ function harmonyAddressSuggestionsFor(text: borrow String) -> [AddressSuggestion
     let normalized = harmonyNavigationNormalizedURL(typed)
     if normalized.count > 0 {
         rows.append(AddressSuggestion {
-            kind: SuggestionKind.Typed
-            url: normalized
+            kind: SuggestionKind.Typed,
+            url: normalized,
             title: suggestionTypedLabel(typed)
         })
     }
@@ -123,12 +123,12 @@ function harmonyAddressSuggestionsFor(text: borrow String) -> [AddressSuggestion
         // new.
         if url != normalized {
             rows.append(AddressSuggestion {
-                kind: suggestionKindFromCode(Int(hbSuggestionKind(native)))
-                url: url
-                title: hbSuggestionTitle(native)
-                host: hbSuggestionHost(native)
-                node: Int(hbSuggestionNode(native))
-                visitCount: Int(hbSuggestionVisitCount(native))
+                kind: suggestionKindFromCode(Int(hbSuggestionKind(native))),
+                url: url,
+                title: hbSuggestionTitle(native),
+                host: hbSuggestionHost(native),
+                node: Int(hbSuggestionNode(native)),
+                visitCount: Int(hbSuggestionVisitCount(native)),
                 lastVisit: hbSuggestionLastVisit(native)
             })
         }
