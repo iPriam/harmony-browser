@@ -120,11 +120,11 @@ function harmonyHistoryRead(text: borrow String, limit: Int) -> [HistoryVisit] {
     while index < count {
         let native = I32(index)
         visits.append(HistoryVisit {
-            url: hbHistoryURL(native)
-            title: hbHistoryTitle(native)
-            host: hbHistoryHost(native)
-            lastVisit: hbHistoryLastVisit(native)
-            visitCount: Int(hbHistoryVisitCount(native))
+            url: hbHistoryURL(native),
+            title: hbHistoryTitle(native),
+            host: hbHistoryHost(native),
+            lastVisit: hbHistoryLastVisit(native),
+            visitCount: Int(hbHistoryVisitCount(native)),
             day: Int(hbHistoryDay(native))
         })
         index = index + 1
@@ -252,11 +252,11 @@ function harmonyHistoryForgetHostAction(host: String) -> () -> Void {
 function harmonyHistoryCutoff(range: borrow BrowsingDataRange) -> Float {
     let now = harmonyBookmarksNow()
     match range {
-        LastHour -> return now - 3600.0;
-        LastDay -> return now - 86400.0;
-        LastWeek -> return now - 604800.0;
-        LastFourWeeks -> return now - 2419200.0;
-        AllTime -> return 0.0;
+        LastHour -> return now - 3600.0
+        LastDay -> return now - 86400.0
+        LastWeek -> return now - 604800.0
+        LastFourWeeks -> return now - 2419200.0
+        AllTime -> return 0.0
     }
 }
 

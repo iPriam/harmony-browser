@@ -129,25 +129,25 @@ function harmonyAttach(component: HarmonyComponent, version: String) -> HarmonyA
     let endpoint = harmonyEndpointArgument()
     if endpoint.count == 0 {
         return HarmonyAttachment {
-            component: move component
-            state: HarmonyAttachState.Detached
-            port: IpcPort {}
+            component: move component,
+            state: HarmonyAttachState.Detached,
+            port: IpcPort {},
             note: "Started with no shell to attach to."
         }
     }
     var port = ipcPort(ipcConnect(endpoint))
     if port.isOpen() == false {
         return HarmonyAttachment {
-            component: move component
-            state: HarmonyAttachState.Detached
-            port: move port
+            component: move component,
+            state: HarmonyAttachState.Detached,
+            port: move port,
             note: "The shell that started this is no longer there."
         }
     }
     var hello = IpcWriter {}
     encode_HarmonyHello(HarmonyHello {
-        component: component
-        protocol: harmonyProtocolVersion()
+        component: component,
+        protocol: harmonyProtocolVersion(),
         version: move version
     }, hello)
     let call = port.request(
@@ -157,16 +157,16 @@ function harmonyAttach(component: HarmonyComponent, version: String) -> HarmonyA
     )
     if call == 0 {
         return HarmonyAttachment {
-            component: move component
-            state: HarmonyAttachState.Detached
-            port: move port
+            component: move component,
+            state: HarmonyAttachState.Detached,
+            port: move port,
             note: "The shell went while this was starting."
         }
     }
     return HarmonyAttachment {
-        component: move component
-        state: HarmonyAttachState.Greeting
-        port: move port
+        component: move component,
+        state: HarmonyAttachState.Greeting,
+        port: move port,
         note: ""
     }
 }

@@ -10,8 +10,8 @@
 // to happen before that registry creates its first page and five other systems
 // have the same requirement.
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_revision; abi: c; }
-function downloadsNativeRevisionEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_revision, abi: c }
+function downloadsNativeRevisionEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeRevision() -> I32 {
@@ -21,8 +21,8 @@ function downloadsNativeRevision() -> I32 {
     return downloadsNativeRevisionEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_count; abi: c; }
-function downloadsNativeCountEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_count, abi: c }
+function downloadsNativeCountEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeCount() -> I32 {
@@ -32,8 +32,8 @@ function downloadsNativeCount() -> I32 {
     return downloadsNativeCountEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_id_at; abi: c; }
-function downloadsNativeIdAtEngine(index: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_id_at, abi: c }
+function downloadsNativeIdAtEngine(index: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeIdAt(index: I32) -> I32 {
@@ -43,8 +43,8 @@ function downloadsNativeIdAt(index: I32) -> I32 {
     return downloadsNativeIdAtEngine(index)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_active_count; abi: c; }
-function downloadsNativeActiveCountEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_active_count, abi: c }
+function downloadsNativeActiveCountEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeActiveCount() -> I32 {
@@ -54,8 +54,8 @@ function downloadsNativeActiveCount() -> I32 {
     return downloadsNativeActiveCountEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_state; abi: c; }
-function downloadsNativeStateEngine(id: I32) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_state, abi: c }
+function downloadsNativeStateEngine(id: I32) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeState(id: I32) -> I32 {
@@ -65,8 +65,8 @@ function downloadsNativeState(id: I32) -> I32 {
     return downloadsNativeStateEngine(id)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_received_bytes; abi: c; }
-function downloadsNativeReceivedBytesEngine(id: I32) -> Int;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_received_bytes, abi: c }
+function downloadsNativeReceivedBytesEngine(id: I32) -> Int
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeReceivedBytes(id: I32) -> Int {
@@ -76,8 +76,8 @@ function downloadsNativeReceivedBytes(id: I32) -> Int {
     return downloadsNativeReceivedBytesEngine(id)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_total_bytes; abi: c; }
-function downloadsNativeTotalBytesEngine(id: I32) -> Int;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_total_bytes, abi: c }
+function downloadsNativeTotalBytesEngine(id: I32) -> Int
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeTotalBytes(id: I32) -> Int {
@@ -87,8 +87,8 @@ function downloadsNativeTotalBytes(id: I32) -> Int {
     return downloadsNativeTotalBytesEngine(id)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_text; abi: c; }
-function downloadsNativeTextEngine(id: I32, field: I32) -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_text, abi: c }
+function downloadsNativeTextEngine(id: I32, field: I32) -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeText(id: I32, field: I32) -> String {
@@ -98,8 +98,8 @@ function downloadsNativeText(id: I32, field: I32) -> String {
     return downloadsNativeTextEngine(id, field)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_directory; abi: c; }
-function downloadsNativeDirectoryEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_directory, abi: c }
+function downloadsNativeDirectoryEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeDirectory() -> String {
@@ -109,8 +109,8 @@ function downloadsNativeDirectory() -> String {
     return downloadsNativeDirectoryEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_cancel; abi: c; }
-function downloadsNativeCancelEngine(id: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_cancel, abi: c }
+function downloadsNativeCancelEngine(id: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeCancel(id: I32) {
@@ -121,8 +121,8 @@ function downloadsNativeCancel(id: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_remove; abi: c; }
-function downloadsNativeRemoveEngine(id: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_remove, abi: c }
+function downloadsNativeRemoveEngine(id: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeRemove(id: I32) {
@@ -133,8 +133,8 @@ function downloadsNativeRemove(id: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_clear_finished; abi: c; }
-function downloadsNativeClearFinishedEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_clear_finished, abi: c }
+function downloadsNativeClearFinishedEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeClearFinished() {
@@ -145,8 +145,8 @@ function downloadsNativeClearFinished() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_reveal; abi: c; }
-function downloadsNativeRevealEngine(id: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_reveal, abi: c }
+function downloadsNativeRevealEngine(id: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeReveal(id: I32) {
@@ -157,8 +157,8 @@ function downloadsNativeReveal(id: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_open; abi: c; }
-function downloadsNativeOpenEngine(id: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_open, abi: c }
+function downloadsNativeOpenEngine(id: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeOpen(id: I32) {
@@ -169,8 +169,8 @@ function downloadsNativeOpen(id: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_reveal_directory; abi: c; }
-function downloadsNativeRevealDirectoryEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_reveal_directory, abi: c }
+function downloadsNativeRevealDirectoryEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeRevealDirectory() {
@@ -181,8 +181,8 @@ function downloadsNativeRevealDirectory() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_downloads_force_next; abi: c; }
-function downloadsNativeForceNextEngine(url: CString) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_downloads_force_next, abi: c }
+function downloadsNativeForceNextEngine(url: CString) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function downloadsNativeForceNext(url: borrow String) {

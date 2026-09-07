@@ -47,11 +47,11 @@ function harmonyPlatform() -> HarmonyPlatform {
 // above this line has to know which platform it is on.
 function harmonyExecutableSuffix() -> String {
     match harmonyPlatform() {
-        Windows -> return ".exe";
-        Linux -> return "";
-        MacOS -> return "";
-        IOS -> return "";
-        Unknown -> return "";
+        Windows -> return ".exe"
+        Linux -> return ""
+        MacOS -> return ""
+        IOS -> return ""
+        Unknown -> return ""
     }
 }
 
@@ -62,8 +62,8 @@ function harmonyExecutableSuffix() -> String {
 // reads it out of its environment and never asks the desktop itself.
 function harmonyShellAppearanceName() -> String {
     match resolvedAppearance(Appearance.Dark) {
-        Light -> return "light";
-        Dark -> return "dark";
+        Light -> return "light"
+        Dark -> return "dark"
     }
 }
 
@@ -80,10 +80,10 @@ function harmonyShellAppearanceName() -> String {
 // what it is instead of showing a component that never arrives.
 function harmonySupportsComponents() -> Bool {
     match harmonyPlatform() {
-        Windows -> return true;
-        Linux -> return true;
-        MacOS -> return true;
-        IOS -> return false;
-        Unknown -> return false;
+        Windows -> return true
+        Linux -> return true
+        MacOS -> return true
+        IOS -> return false
+        Unknown -> return false
     }
 }

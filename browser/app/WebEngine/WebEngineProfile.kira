@@ -37,11 +37,11 @@ construct HarmonyWebProfile() extends HarmonyWebProfileStore {
         if home.count == 0 {
             return ""
         }
-        let base = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), home)
+        let base: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), home)
         if pointerIsNull(base) {
             return ""
         }
-        let withDir = webMsgSendP(base, webSel("stringByAppendingPathComponent:"), webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "HarmonyBrowser"))
+        let withDir: RawPtr = webMsgSend(base, webSel("stringByAppendingPathComponent:"), webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "HarmonyBrowser"))
         if pointerIsNull(withDir) {
             return ""
         }
@@ -53,11 +53,11 @@ construct HarmonyWebProfile() extends HarmonyWebProfileStore {
         if dir.count == 0 {
             return ""
         }
-        let base = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), dir)
+        let base: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), dir)
         if pointerIsNull(base) {
             return ""
         }
-        let withFile = webMsgSendP(base, webSel("stringByAppendingPathComponent:"), webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "session.txt"))
+        let withFile: RawPtr = webMsgSend(base, webSel("stringByAppendingPathComponent:"), webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), "session.txt"))
         if pointerIsNull(withFile) {
             return ""
         }
@@ -69,11 +69,11 @@ construct HarmonyWebProfile() extends HarmonyWebProfileStore {
         if dir.count == 0 {
             return
         }
-        let fm = webMsgSend(webObjcGetClass("NSFileManager"), webSel("defaultManager"))
+        let fm: RawPtr = webMsgSend(webObjcGetClass("NSFileManager"), webSel("defaultManager"))
         if pointerIsNull(fm) {
             return
         }
-        let ignored = webMsgSendCreateDir(fm, webSel("createDirectoryAtPath:withIntermediateDirectories:attributes:error:"), dir, true, nullPointer(), nullPointer())
+        let ignored: Bool = webMsgSend(fm, webSel("createDirectoryAtPath:withIntermediateDirectories:attributes:error:"), dir, true, nullPointer(), nullPointer())
         return
     }
 
@@ -84,7 +84,7 @@ construct HarmonyWebProfile() extends HarmonyWebProfileStore {
         if path.count == 0 {
             return ""
         }
-        let text = webMsgSendReadFile(webObjcGetClass("NSString"), webSel("stringWithContentsOfFile:encoding:error:"), path, U64(4), nullPointer())
+        let text: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithContentsOfFile:encoding:error:"), path, U64(4), nullPointer())
         if pointerIsNull(text) {
             return ""
         }
@@ -97,11 +97,11 @@ construct HarmonyWebProfile() extends HarmonyWebProfileStore {
         if path.count == 0 {
             return
         }
-        let text = webMsgSendText(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), url)
+        let text: RawPtr = webMsgSend(webObjcGetClass("NSString"), webSel("stringWithUTF8String:"), url)
         if pointerIsNull(text) {
             return
         }
-        let ignored = webMsgSendWriteFile(text, webSel("writeToFile:atomically:encoding:error:"), path, true, U64(4), nullPointer())
+        let ignored: Bool = webMsgSend(text, webSel("writeToFile:atomically:encoding:error:"), path, true, U64(4), nullPointer())
         return
     }
 

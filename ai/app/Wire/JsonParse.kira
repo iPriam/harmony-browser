@@ -217,7 +217,7 @@ function jsonScanNumberToFloat(digits: borrow String, negative: Bool, exponent: 
         } else if byte == 101 || byte == 69 {
             // The exponent itself arrived separately.
         } else {
-            let digit = byte - 48
+            let digit = Int(byte) - 48
             if inFraction {
                 fractions = fractions + 1
             }
@@ -314,7 +314,7 @@ function jsonScanNumber(text: borrow String, scan: borrow mut JsonScan, document
             // Saturated far past any range a Float can name; the conversion
             // clamps again on its way down to a power of ten.
             if exponentValue < 100000 {
-                exponentValue = exponentValue * 10 + (text.charAt(scan.at) - 48)
+                exponentValue = exponentValue * 10 + (Int(text.charAt(scan.at)) - 48)
             }
             scan.at = scan.at + 1
         }
@@ -332,7 +332,7 @@ function jsonScanNumber(text: borrow String, scan: borrow mut JsonScan, document
         var overflowed = false
         var index = negative ? 1 : 0
         while index < digits.count {
-            let digit = digits.charAt(index) - 48
+            let digit = Int(digits.charAt(index)) - 48
             if magnitude > 922337203685477579 {
                 overflowed = true
             }
@@ -345,9 +345,9 @@ function jsonScanNumber(text: borrow String, scan: borrow mut JsonScan, document
         if overflowed == false {
             let exact = negative ? 0 - magnitude : magnitude
             document.nodes.append(JsonNode {
-                kind = JsonKind.Number
-                number = Float(exact)
-                integer = exact
+                kind = JsonKind.Number,
+                number = Float(exact),
+                integer = exact,
                 whole = true
             })
             return true
@@ -355,8 +355,8 @@ function jsonScanNumber(text: borrow String, scan: borrow mut JsonScan, document
     }
 
     document.nodes.append(JsonNode {
-        kind = JsonKind.Number
-        number = jsonScanNumberToFloat(digits, negative, exponentValue)
+        kind = JsonKind.Number,
+        number = jsonScanNumberToFloat(digits, negative, exponentValue),
         whole = false
     })
     return true
@@ -367,7 +367,7 @@ function jsonScanWord(text: borrow String, scan: borrow mut JsonScan, document: 
     if scan.at + word.count <= text.count && text.substring(scan.at, scan.at + word.count) == word {
         scan.at = scan.at + word.count
         document.nodes.append(JsonNode {
-            kind = kind
+            kind = kind,
             boolean = boolean
         })
         return true
@@ -402,7 +402,7 @@ function jsonScanValue(text: borrow String, scan: borrow mut JsonScan, document:
             return false
         }
         document.nodes.append(JsonNode {
-            kind = JsonKind.Text
+            kind = JsonKind.Text,
             text = decoded
         })
         return true
@@ -434,8 +434,8 @@ function jsonScanObject(text: borrow String, scan: borrow mut JsonScan, document
     if scan.at < text.count && text.charAt(scan.at) == 125 {
         scan.at = scan.at + 1
         document.nodes.append(JsonNode {
-            kind = JsonKind.Object
-            children = indices
+            kind = JsonKind.Object,
+            children = indices,
             names = members
         })
         return true
@@ -478,8 +478,8 @@ function jsonScanObject(text: borrow String, scan: borrow mut JsonScan, document
         }
     }
     document.nodes.append(JsonNode {
-        kind = JsonKind.Object
-        children = indices
+        kind = JsonKind.Object,
+        children = indices,
         names = members
     })
     return true
@@ -494,7 +494,7 @@ function jsonScanArray(text: borrow String, scan: borrow mut JsonScan, document:
     if scan.at < text.count && text.charAt(scan.at) == 93 {
         scan.at = scan.at + 1
         document.nodes.append(JsonNode {
-            kind = JsonKind.Array
+            kind = JsonKind.Array,
             children = indices
         })
         return true
@@ -520,7 +520,7 @@ function jsonScanArray(text: borrow String, scan: borrow mut JsonScan, document:
         }
     }
     document.nodes.append(JsonNode {
-        kind = JsonKind.Array
+        kind = JsonKind.Array,
         children = indices
     })
     return true
@@ -547,8 +547,8 @@ function jsonParse(text: borrow String) -> JsonParseResult {
     // appended last.
     document.root = document.nodes.count - 1
     return JsonParseResult {
-        ok = true
-        document = document
+        ok = true,
+        document = document,
         offset = scan.at
     }
 }
@@ -556,8 +556,8 @@ function jsonParse(text: borrow String) -> JsonParseResult {
 // The answer for a document that could not be read.
 function jsonParseStopped(at: Int, why: borrow String) -> JsonParseResult {
     return JsonParseResult {
-        ok = false
-        error = why
+        ok = false,
+        error = why,
         offset = at
     }
 }

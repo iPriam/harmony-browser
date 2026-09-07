@@ -38,19 +38,19 @@ function harmonyBrowserTabs() -> BrowserTabs {
         let id = harmonyTabsIdAt(index)
         let page = harmonyNavigationPage(id)
         tabs.append(BrowserTab {
-            id: id
-            title: harmonyTabLabelFor(id)
-            address: page.url
-            loading: page.isLoading
-            pinned: false
+            id: id,
+            title: harmonyTabLabelFor(id),
+            address: page.url,
+            loading: page.isLoading,
+            pinned: false,
             private: false
         })
         index = index + 1
     }
     return BrowserTabs {
-        tabs: move tabs
-        activeId: harmonyTabsActiveId()
-        engineReady: harmonyBrowserEngineAvailable() && harmonyBrowserReady()
+        tabs: move tabs,
+        activeId: harmonyTabsActiveId(),
+        engineReady: harmonyBrowserEngineAvailable() && harmonyBrowserReady(),
         note: harmonyBrowserEngineNote()
     }
 }

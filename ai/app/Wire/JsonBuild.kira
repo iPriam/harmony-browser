@@ -222,8 +222,8 @@ function jsonWriteNode(builder: borrow mut JsonBuilder, document: borrow JsonDoc
     }
     let subject = document.nodes[node]
     match subject.kind {
-        Null -> jsonNullValue(builder);
-        Boolean -> jsonBoolValue(builder, subject.boolean);
+        Null -> jsonNullValue(builder)
+        Boolean -> jsonBoolValue(builder, subject.boolean)
         Number -> {
             // Whole numbers go back out through their exact integer, so a
             // round trip keeps ids and token counts bit-identical.
@@ -233,7 +233,7 @@ function jsonWriteNode(builder: borrow mut JsonBuilder, document: borrow JsonDoc
                 jsonFloatValue(builder, subject.number)
             }
         }
-        Text -> jsonTextValue(builder, subject.text);
+        Text -> jsonTextValue(builder, subject.text)
         Array -> {
             jsonBeginArray(builder)
             for index in 0..subject.children.count {

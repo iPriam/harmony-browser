@@ -8,7 +8,7 @@ import KiraGraphics
 // first page, and it fills the client fields no single system owns. What is left
 // for this side is the ORDER, which is a browser-level decision and belongs where
 // the browser is composed rather than inside any one system.
-@FFI.Extern { library: harmony_browser; symbol: hb_browser_frame; abi: c; }
+@FFI.Extern { library: harmony_browser, symbol: hb_browser_frame, abi: c }
 function nativeBrowserFrame(
     hostWindow: RawPtr,
     x: I32,
@@ -17,10 +17,10 @@ function nativeBrowserFrame(
     height: I32,
     backingScale: Float,
     homeURL: CString,
-) -> I32;
+) -> I32
 
-@FFI.Extern { library: harmony_browser; symbol: hb_browser_ready; abi: c; }
-function nativeBrowserReadyEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_browser_ready, abi: c }
+function nativeBrowserReadyEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function nativeBrowserReady() -> I32 {
@@ -30,8 +30,8 @@ function nativeBrowserReady() -> I32 {
     return nativeBrowserReadyEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_browser_error; abi: c; }
-function nativeBrowserErrorEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_browser_error, abi: c }
+function nativeBrowserErrorEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function nativeBrowserError() -> String {

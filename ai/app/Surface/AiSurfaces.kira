@@ -206,10 +206,10 @@ function aiPointer(surfaces: borrow mut AiSurfaces, delivery: borrow IpcDelivery
         return false
     }
     match event.phase {
-        Move -> harmonyPointerMoved(surfaces.painter, event.x, event.y);
-        Press -> harmonyPointerPressed(surfaces.painter, event.x, event.y);
-        Release -> harmonyPointerReleased(surfaces.painter, event.x, event.y);
-        Leave -> harmonyPointerLeft(surfaces.painter);
+        Move -> harmonyPointerMoved(surfaces.painter, event.x, event.y)
+        Press -> harmonyPointerPressed(surfaces.painter, event.x, event.y)
+        Release -> harmonyPointerReleased(surfaces.painter, event.x, event.y)
+        Leave -> harmonyPointerLeft(surfaces.painter)
     }
     return true
 }

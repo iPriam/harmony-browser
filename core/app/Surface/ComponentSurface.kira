@@ -47,10 +47,10 @@ function harmonyReleaseComponentSurface(surface: borrow mut HarmonyComponentSurf
 // A surface that could not be had, and why.
 function harmonyNoSurface(role: HarmonySurfaceRole, note: String) -> HarmonyComponentSurface {
     return HarmonyComponentSurface {
-        role: move role
-        shared: SharedTexture {}
-        announced: false
-        generation: 0
+        role: move role,
+        shared: SharedTexture {},
+        announced: false,
+        generation: 0,
         note: move note
     }
 }
@@ -82,10 +82,10 @@ function harmonyOpenComponentSurface(
         return harmonyNoSurface(move role, "The shared surface could not be imported as a texture.")
     }
     return HarmonyComponentSurface {
-        role: move role
-        shared: move shared
-        announced: false
-        generation: 1
+        role: move role,
+        shared: move shared,
+        announced: false,
+        generation: 1,
         note: ""
     }
 }
@@ -132,18 +132,18 @@ function harmonyAnnounceComponentSurface(
     var out = IpcWriter {}
     encode_HarmonySurfaceNote(HarmonySurfaceNote {
         surface: HarmonySurface {
-            role: surface.role
-            id: id
-            layer: harmonyLayerForRole(surface.role)
+            role: surface.role,
+            id: id,
+            layer: harmonyLayerForRole(surface.role),
             rect: HarmonyRect {
-                x: 0.0
-                y: 0.0
-                width: Float(surface.shared.surface.width)
+                x: 0.0,
+                y: 0.0,
+                width: Float(surface.shared.surface.width),
                 height: Float(surface.shared.surface.height)
-            }
-            scale: 1.0
-            generation: surface.generation
-            stride: surface.shared.surface.stride
+            },
+            scale: 1.0,
+            generation: surface.generation,
+            stride: surface.shared.surface.stride,
             modifier: surface.shared.surface.modifier
         }
     }, out)
@@ -171,13 +171,13 @@ function harmonyDropComponentSurface(
     var out = IpcWriter {}
     encode_HarmonySurfaceNote(HarmonySurfaceNote {
         surface: HarmonySurface {
-            role: surface.role
-            id: id
-            layer: harmonyLayerForRole(surface.role)
-            rect: HarmonyRect {}
-            scale: 1.0
-            generation: surface.generation
-            stride: 0
+            role: surface.role,
+            id: id,
+            layer: harmonyLayerForRole(surface.role),
+            rect: HarmonyRect {},
+            scale: 1.0,
+            generation: surface.generation,
+            stride: 0,
             modifier: 0
         }
     }, out)
@@ -201,18 +201,18 @@ function harmonyRaiseComponentOverlay(
     var out = IpcWriter {}
     encode_HarmonySurfaceNote(HarmonySurfaceNote {
         surface: HarmonySurface {
-            role: surface.role
-            id: id
-            layer: harmonyLayerForRole(surface.role)
+            role: surface.role,
+            id: id,
+            layer: harmonyLayerForRole(surface.role),
             rect: HarmonyRect {
-                x: 0.0
-                y: 0.0
-                width: Float(surface.shared.surface.width)
+                x: 0.0,
+                y: 0.0,
+                width: Float(surface.shared.surface.width),
                 height: Float(surface.shared.surface.height)
-            }
-            scale: 1.0
-            generation: surface.generation
-            stride: surface.shared.surface.stride
+            },
+            scale: 1.0,
+            generation: surface.generation,
+            stride: surface.shared.surface.stride,
             modifier: surface.shared.surface.modifier
         }
     }, out)

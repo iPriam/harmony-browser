@@ -89,10 +89,10 @@ function chromeURLSecurity(url: borrow String) -> ChromeSecurity {
 
 function chromeSecuritySymbol(level: borrow ChromeSecurity) -> Symbol {
     match level {
-        Secure -> return Symbol.Lock;
-        Insecure -> return Symbol.LockOpen;
-        Local -> return Symbol.Folder;
-        Internal -> return Symbol.Info;
+        Secure -> return Symbol.Lock
+        Insecure -> return Symbol.LockOpen
+        Local -> return Symbol.Folder
+        Internal -> return Symbol.Info
     }
 }
 
@@ -101,10 +101,10 @@ function chromeSecuritySymbol(level: borrow ChromeSecurity) -> Symbol {
 // than encrypted; what is worth colouring is the address that is NOT protected.
 function chromeSecurityInk(level: borrow ChromeSecurity) -> PrimaryColor {
     match level {
-        Secure -> return PrimaryColor.Secondary;
-        Insecure -> return PrimaryColor.Warning;
-        Local -> return PrimaryColor.Secondary;
-        Internal -> return PrimaryColor.Tertiary;
+        Secure -> return PrimaryColor.Secondary
+        Insecure -> return PrimaryColor.Warning
+        Local -> return PrimaryColor.Secondary
+        Internal -> return PrimaryColor.Tertiary
     }
 }
 

@@ -32,8 +32,8 @@ struct SearchEngine {
 // The numbers the native bridge speaks, from harmony_settings.h.
 function startupBehaviourCode(behaviour: borrow StartupBehaviour) -> Int {
     match behaviour {
-        NewTab -> return 0;
-        RestoreSession -> return 1;
+        NewTab -> return 0
+        RestoreSession -> return 1
     }
 }
 
@@ -50,15 +50,15 @@ function startupBehaviours() -> [StartupBehaviour] {
 
 function startupBehaviourTitle(behaviour: borrow StartupBehaviour) -> String {
     match behaviour {
-        NewTab -> return "Open a new tab";
-        RestoreSession -> return "Reopen the last tabs";
+        NewTab -> return "Open a new tab"
+        RestoreSession -> return "Reopen the last tabs"
     }
 }
 
 function startupBehaviourSymbol(behaviour: StartupBehaviour) -> Symbol {
     match behaviour {
-        NewTab -> return Symbol.Plus;
-        RestoreSession -> return Symbol.ArrowCounterclockwise;
+        NewTab -> return Symbol.Plus
+        RestoreSession -> return Symbol.ArrowCounterclockwise
     }
 }
 
@@ -116,9 +116,9 @@ function harmonySettingsEngineAt(index: Int) -> SearchEngine {
         return SearchEngine {}
     }
     return SearchEngine {
-        index: index
-        name: nativeSettingsEngineName(I32(index))
-        query: nativeSettingsEngineQuery(I32(index))
+        index: index,
+        name: nativeSettingsEngineName(I32(index)),
+        query: nativeSettingsEngineQuery(I32(index)),
         isDefault: harmonySettingsDefaultEngineIndex() == index
     }
 }

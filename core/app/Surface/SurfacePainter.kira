@@ -41,8 +41,8 @@ function harmonyOpenPainter(device: borrow GraphicsHeadless) -> HarmonySurfacePa
     // it is a property of what this batch is FOR rather than of any frame.
     batch.setBackgroundPromotable(false)
     return HarmonySurfacePainter {
-        batch: move batch
-        frames: 0
+        batch: move batch,
+        frames: 0,
         ready: true
     }
 }
@@ -55,22 +55,22 @@ function harmonyOpenPainter(device: borrow GraphicsHeadless) -> HarmonySurfacePa
 // viewport and the frame count is zero, and honestly so.
 function harmonyPaintContext(painter: borrow HarmonySurfacePainter, width: Int, height: Int) -> FoundationUiContext {
     return FoundationUiContext {
-        frameCount: painter.frames
+        frameCount: painter.frames,
         viewport: Size {
-            width: Float(width)
+            width: Float(width),
             height: Float(height)
-        }
+        },
         // Everything the pointer has established, carried in. A component has no
         // pointer of its own -- the window owns the only real one and forwards
         // where it is in THIS surface's coordinates -- but from the tree's side
         // that is indistinguishable from having one, which is the property that
         // lets the same widgets serve a window and a compositor.
-        pointerX: painter.ui.pointerX
-        pointerY: painter.ui.pointerY
-        hoveredKey: painter.ui.hoveredKey
-        pressedKey: painter.ui.pressedKey
-        clickedKey: painter.ui.clickedKey
-        focusedKey: painter.ui.focusedKey
+        pointerX: painter.ui.pointerX,
+        pointerY: painter.ui.pointerY,
+        hoveredKey: painter.ui.hoveredKey,
+        pressedKey: painter.ui.pressedKey,
+        clickedKey: painter.ui.clickedKey,
+        focusedKey: painter.ui.focusedKey,
         eventCount: painter.ui.eventCount
     }
 }
@@ -145,12 +145,12 @@ function harmonyPaintSurface(
         return false
     }
     var backend = KiraGraphicsFoundationBackend {
-        graphics: device.graphics
-        batch: painter.batch
+        graphics: device.graphics,
+        batch: painter.batch,
         windowTransparent: false
     }
     let viewport = Size {
-        width: Float(width)
+        width: Float(width),
         height: Float(height)
     }
     // A full layout every frame rather than the incremental pass. A component's

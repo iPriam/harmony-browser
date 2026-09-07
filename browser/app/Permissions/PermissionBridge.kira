@@ -10,8 +10,8 @@
 // to happen before that registry creates its first page and five other systems
 // have the same requirement.
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_supported; abi: c; }
-function permissionsSupportedEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_supported, abi: c }
+function permissionsSupportedEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsSupported() -> I32 {
@@ -21,8 +21,8 @@ function permissionsSupported() -> I32 {
     return permissionsSupportedEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_pending_count; abi: c; }
-function permissionsPendingCountEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_pending_count, abi: c }
+function permissionsPendingCountEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsPendingCount() -> I32 {
@@ -32,8 +32,8 @@ function permissionsPendingCount() -> I32 {
     return permissionsPendingCountEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_pending_id; abi: c; }
-function permissionsPendingIdEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_pending_id, abi: c }
+function permissionsPendingIdEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsPendingId() -> I32 {
@@ -43,8 +43,8 @@ function permissionsPendingId() -> I32 {
     return permissionsPendingIdEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_pending_kind; abi: c; }
-function permissionsPendingKindEngine() -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_pending_kind, abi: c }
+function permissionsPendingKindEngine() -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsPendingKind() -> I32 {
@@ -54,8 +54,8 @@ function permissionsPendingKind() -> I32 {
     return permissionsPendingKindEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_pending_origin; abi: c; }
-function permissionsPendingOriginEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_pending_origin, abi: c }
+function permissionsPendingOriginEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsPendingOrigin() -> String {
@@ -65,8 +65,8 @@ function permissionsPendingOrigin() -> String {
     return permissionsPendingOriginEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_resolve; abi: c; }
-function permissionsResolveEngine(requestId: I32, decision: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_resolve, abi: c }
+function permissionsResolveEngine(requestId: I32, decision: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsResolve(requestId: I32, decision: I32) {
@@ -77,8 +77,8 @@ function permissionsResolve(requestId: I32, decision: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_deny_all; abi: c; }
-function permissionsDenyAllEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_deny_all, abi: c }
+function permissionsDenyAllEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsDenyAll() {
@@ -89,8 +89,8 @@ function permissionsDenyAll() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_policy_clear; abi: c; }
-function permissionsPolicyClearEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_policy_clear, abi: c }
+function permissionsPolicyClearEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsPolicyClear() {
@@ -101,8 +101,8 @@ function permissionsPolicyClear() {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_policy_set; abi: c; }
-function permissionsPolicySetEngine(kind: I32, origin: CString, decision: I32) -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_policy_set, abi: c }
+function permissionsPolicySetEngine(kind: I32, origin: CString, decision: I32) -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsPolicySet(kind: I32, origin: borrow String, decision: I32) {
@@ -113,8 +113,8 @@ function permissionsPolicySet(kind: I32, origin: borrow String, decision: I32) {
     return
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_policy_get; abi: c; }
-function permissionsPolicyGetEngine(kind: I32, origin: CString) -> I32;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_policy_get, abi: c }
+function permissionsPolicyGetEngine(kind: I32, origin: CString) -> I32
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsPolicyGet(kind: I32, origin: borrow String) -> I32 {
@@ -124,8 +124,8 @@ function permissionsPolicyGet(kind: I32, origin: borrow String) -> I32 {
     return permissionsPolicyGetEngine(kind, origin)
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_error; abi: c; }
-function permissionsErrorEngine() -> CString;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_error, abi: c }
+function permissionsErrorEngine() -> CString
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsError() -> String {
@@ -135,8 +135,8 @@ function permissionsError() -> String {
     return permissionsErrorEngine()
 }
 
-@FFI.Extern { library: harmony_browser; symbol: hb_permissions_shutdown; abi: c; }
-function permissionsShutdownEngine() -> Void;
+@FFI.Extern { library: harmony_browser, symbol: hb_permissions_shutdown, abi: c }
+function permissionsShutdownEngine() -> Void
 
 // Guarded: a build with no engine answers without calling it.
 function permissionsShutdown() {

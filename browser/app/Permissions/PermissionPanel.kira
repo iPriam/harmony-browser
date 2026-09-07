@@ -47,9 +47,9 @@ function permissionCycleAction(origin: String, kind: PermissionKind) -> () -> Vo
 
 function permissionDecisionNext(decision: PermissionDecision) -> PermissionDecision {
     match decision {
-        Ask -> return PermissionDecision.Allow;
-        Allow -> return PermissionDecision.Deny;
-        Deny -> return PermissionDecision.Ask;
+        Ask -> return PermissionDecision.Allow
+        Allow -> return PermissionDecision.Deny
+        Deny -> return PermissionDecision.Ask
     }
 }
 

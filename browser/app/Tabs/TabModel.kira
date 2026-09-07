@@ -27,16 +27,16 @@ function harmonyTabModelFor(tabId: Int) -> TabModel {
 
     let native = I32(tabId)
     return TabModel {
-        id: tabId
-        index: harmonyTabsIndexOf(tabId)
-        title: nativeTabsTitle(native)
-        url: nativeTabsURL(native)
-        host: nativeTabsHost(native)
-        loading: nativeTabsIsLoading(native) != I32(0)
-        pinned: nativeTabsIsPinned(native) != I32(0)
-        active: harmonyTabsActiveId() == tabId
-        canGoBack: nativeTabsCanGoBack(native) != I32(0)
-        canGoForward: nativeTabsCanGoForward(native) != I32(0)
+        id: tabId,
+        index: harmonyTabsIndexOf(tabId),
+        title: nativeTabsTitle(native),
+        url: nativeTabsURL(native),
+        host: nativeTabsHost(native),
+        loading: nativeTabsIsLoading(native) != I32(0),
+        pinned: nativeTabsIsPinned(native) != I32(0),
+        active: harmonyTabsActiveId() == tabId,
+        canGoBack: nativeTabsCanGoBack(native) != I32(0),
+        canGoForward: nativeTabsCanGoForward(native) != I32(0),
         progress: nativeTabsProgress(native)
     }
 }

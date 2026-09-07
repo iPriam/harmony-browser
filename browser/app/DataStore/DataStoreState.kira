@@ -160,10 +160,10 @@ function harmonyDataStoreReadSites() -> [SiteData] {
     while index < count {
         let native = I32(index)
         sites.append(SiteData {
-            origin: hbDataRecordOrigin(native)
-            host: hbDataRecordHost(native)
-            bytes: hbDataRecordSize(native)
-            types: Int(hbDataRecordTypes(native))
+            origin: hbDataRecordOrigin(native),
+            host: hbDataRecordHost(native),
+            bytes: hbDataRecordSize(native),
+            types: Int(hbDataRecordTypes(native)),
             lastUsed: hbDataRecordLastUsed(native)
         })
         index = index + 1

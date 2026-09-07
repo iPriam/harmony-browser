@@ -100,9 +100,9 @@ struct HarmonyLink {
         }
         var out = IpcWriter {}
         encode_HarmonyPointer(HarmonyPointer {
-            role: role
-            phase: phase
-            x: x
+            role: role,
+            phase: phase,
+            x: x,
             y: y
         }, out)
         let ignored = self.port.emit(harmonyComponentService(component), harmonyPointerMethod(), out.bytes)
@@ -190,11 +190,11 @@ function harmonyLink(component: HarmonyComponent) -> HarmonyLink {
         state = HarmonyLinkState.Absent
     }
     return HarmonyLink {
-        component: move component
-        state: move state
-        process: 0
-        port: IpcPort {}
-        version: ""
+        component: move component,
+        state: move state,
+        process: 0,
+        port: IpcPort {},
+        version: "",
         note: ""
     }
 }

@@ -28,24 +28,24 @@ enum BrowsingDataRange {
 // `harmony_data_store.h`, and the two must agree.
 function browsingDataTypeBit(kind: borrow BrowsingDataType) -> Int {
     match kind {
-        Cookies -> return 1;
-        Cache -> return 2;
-        LocalStorage -> return 4;
-        IndexedDB -> return 8;
-        ServiceWorkers -> return 16;
-        DOMCache -> return 32;
-        MediaKeys -> return 64;
-        Tracking -> return 128;
+        Cookies -> return 1
+        Cache -> return 2
+        LocalStorage -> return 4
+        IndexedDB -> return 8
+        ServiceWorkers -> return 16
+        DOMCache -> return 32
+        MediaKeys -> return 64
+        Tracking -> return 128
     }
 }
 
 function browsingDataRangeCode(range: BrowsingDataRange) -> Int {
     match range {
-        LastHour -> return 0;
-        LastDay -> return 1;
-        LastWeek -> return 2;
-        LastFourWeeks -> return 3;
-        AllTime -> return 4;
+        LastHour -> return 0
+        LastDay -> return 1
+        LastWeek -> return 2
+        LastFourWeeks -> return 3
+        AllTime -> return 4
     }
 }
 
@@ -67,14 +67,14 @@ function browsingDataRangeFromCode(code: Int) -> BrowsingDataRange {
 
 function browsingDataTypeName(kind: BrowsingDataType) -> String {
     match kind {
-        Cookies -> return "Cookies and site logins";
-        Cache -> return "Cached files and images";
-        LocalStorage -> return "Local storage";
-        IndexedDB -> return "Databases";
-        ServiceWorkers -> return "Offline site workers";
-        DOMCache -> return "Offline site caches";
-        MediaKeys -> return "Protected media licences";
-        Tracking -> return "Tracking records";
+        Cookies -> return "Cookies and site logins"
+        Cache -> return "Cached files and images"
+        LocalStorage -> return "Local storage"
+        IndexedDB -> return "Databases"
+        ServiceWorkers -> return "Offline site workers"
+        DOMCache -> return "Offline site caches"
+        MediaKeys -> return "Protected media licences"
+        Tracking -> return "Tracking records"
     }
 }
 
@@ -82,37 +82,37 @@ function browsingDataTypeName(kind: BrowsingDataType) -> String {
 // Short on purpose -- the panel sits in a sidebar column and nothing here wraps.
 function browsingDataTypeNote(kind: BrowsingDataType) -> String {
     match kind {
-        Cookies -> return "Signs you out of sites";
-        Cache -> return "Pages fetch again";
-        LocalStorage -> return "Sites forget settings";
-        IndexedDB -> return "Offline documents go";
-        ServiceWorkers -> return "No more offline sites";
-        DOMCache -> return "Offline pages refetch";
-        MediaKeys -> return "Videos ask again";
-        Tracking -> return "Tracker records go";
+        Cookies -> return "Signs you out of sites"
+        Cache -> return "Pages fetch again"
+        LocalStorage -> return "Sites forget settings"
+        IndexedDB -> return "Offline documents go"
+        ServiceWorkers -> return "No more offline sites"
+        DOMCache -> return "Offline pages refetch"
+        MediaKeys -> return "Videos ask again"
+        Tracking -> return "Tracker records go"
     }
 }
 
 function browsingDataTypeSymbol(kind: BrowsingDataType) -> Symbol {
     match kind {
-        Cookies -> return Symbol.Globe;
-        Cache -> return Symbol.PhotoOnRectangle;
-        LocalStorage -> return Symbol.Globe;
-        IndexedDB -> return Symbol.Globe;
-        ServiceWorkers -> return Symbol.Gear;
-        DOMCache -> return Symbol.Globe;
-        MediaKeys -> return Symbol.Globe;
-        Tracking -> return Symbol.Eyeglasses;
+        Cookies -> return Symbol.Globe
+        Cache -> return Symbol.PhotoOnRectangle
+        LocalStorage -> return Symbol.Globe
+        IndexedDB -> return Symbol.Globe
+        ServiceWorkers -> return Symbol.Gear
+        DOMCache -> return Symbol.Globe
+        MediaKeys -> return Symbol.Globe
+        Tracking -> return Symbol.Eyeglasses
     }
 }
 
 function browsingDataRangeName(range: borrow BrowsingDataRange) -> String {
     match range {
-        LastHour -> return "Last hour";
-        LastDay -> return "Last 24 hours";
-        LastWeek -> return "Last 7 days";
-        LastFourWeeks -> return "Last 4 weeks";
-        AllTime -> return "All time";
+        LastHour -> return "Last hour"
+        LastDay -> return "Last 24 hours"
+        LastWeek -> return "Last 7 days"
+        LastFourWeeks -> return "Last 4 weeks"
+        AllTime -> return "All time"
     }
 }
 
@@ -120,11 +120,11 @@ function browsingDataRangeName(range: borrow BrowsingDataRange) -> String {
 // a browser puts on that button is the thing itself.
 function browsingDataClearLabel(range: BrowsingDataRange) -> String {
     match range {
-        LastHour -> return "Clear the last hour";
-        LastDay -> return "Clear the last 24 hours";
-        LastWeek -> return "Clear the last 7 days";
-        LastFourWeeks -> return "Clear the last 4 weeks";
-        AllTime -> return "Clear everything";
+        LastHour -> return "Clear the last hour"
+        LastDay -> return "Clear the last 24 hours"
+        LastWeek -> return "Clear the last 7 days"
+        LastFourWeeks -> return "Clear the last 4 weeks"
+        AllTime -> return "Clear everything"
     }
 }
 
@@ -175,14 +175,14 @@ function browsingDataTypeAt(index: Int) -> BrowsingDataType {
 // would be asking for something the browser cannot honestly give.
 function browsingDataTypeHonoursRange(kind: BrowsingDataType) -> Bool {
     match kind {
-        Cookies -> return false;
-        Cache -> return true;
-        LocalStorage -> return true;
-        IndexedDB -> return true;
-        ServiceWorkers -> return true;
-        DOMCache -> return true;
-        MediaKeys -> return true;
-        Tracking -> return true;
+        Cookies -> return false
+        Cache -> return true
+        LocalStorage -> return true
+        IndexedDB -> return true
+        ServiceWorkers -> return true
+        DOMCache -> return true
+        MediaKeys -> return true
+        Tracking -> return true
     }
 }
 
@@ -319,13 +319,13 @@ function browsingDataAge(lastUsed: Float) -> String {
 
 function browsingDataShortTypeName(kind: borrow BrowsingDataType) -> String {
     match kind {
-        Cookies -> return "Cookies";
-        Cache -> return "Cache";
-        LocalStorage -> return "Storage";
-        IndexedDB -> return "Databases";
-        ServiceWorkers -> return "Workers";
-        DOMCache -> return "Offline";
-        MediaKeys -> return "Licences";
-        Tracking -> return "Tracking";
+        Cookies -> return "Cookies"
+        Cache -> return "Cache"
+        LocalStorage -> return "Storage"
+        IndexedDB -> return "Databases"
+        ServiceWorkers -> return "Workers"
+        DOMCache -> return "Offline"
+        MediaKeys -> return "Licences"
+        Tracking -> return "Tracking"
     }
 }

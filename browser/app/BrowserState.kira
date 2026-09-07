@@ -141,9 +141,9 @@ function harmonyBrowserPageRect(frame: borrow mut KiraGraphics.RenderFrame) -> H
         pageHeight = 0
     }
     return HarmonyBrowserPageRect {
-        x: leading
-        y: top
-        width: pageWidth
+        x: leading,
+        y: top,
+        width: pageWidth,
         height: pageHeight
     }
 }

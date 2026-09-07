@@ -200,13 +200,13 @@ function harmonyBookmarkItem(id: Int) -> BookmarkItem {
 
     let native = I32(id)
     return BookmarkItem {
-        id: id
-        parent: Int(hbBookmarkParentOf(native))
-        isFolder: hbBookmarkIsFolder(native) != I32(0)
-        title: hbBookmarkTitle(native)
-        url: hbBookmarkURL(native)
-        host: hbBookmarkHost(native)
-        depth: Int(hbBookmarkDepth(native))
+        id: id,
+        parent: Int(hbBookmarkParentOf(native)),
+        isFolder: hbBookmarkIsFolder(native) != I32(0),
+        title: hbBookmarkTitle(native),
+        url: hbBookmarkURL(native),
+        host: hbBookmarkHost(native),
+        depth: Int(hbBookmarkDepth(native)),
         leaves: Int(hbBookmarkLeafCount(native))
     }
 }

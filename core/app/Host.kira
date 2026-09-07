@@ -97,8 +97,8 @@ struct HarmonyHost {
         // learns why rather than seeing its channel close under it.
         var answer = IpcWriter {}
         encode_HarmonyWelcome(HarmonyWelcome {
-            protocol: harmonyProtocolVersion()
-            accepted: accepted
+            protocol: harmonyProtocolVersion(),
+            accepted: accepted,
             reason: reason
         }, answer)
         var carrier = move port
@@ -191,9 +191,9 @@ struct HarmonyHost {
 // no reason to have a runtime running behind it.
 function harmonyHost() -> HarmonyHost {
     return HarmonyHost {
-        endpoint: harmonyPublishSession()
-        browser: harmonyLink(HarmonyComponent.Browser)
-        ai: harmonyLink(HarmonyComponent.Ai)
+        endpoint: harmonyPublishSession(),
+        browser: harmonyLink(HarmonyComponent.Browser),
+        ai: harmonyLink(HarmonyComponent.Ai),
         greeting: []
     }
 }

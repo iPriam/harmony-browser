@@ -13,74 +13,73 @@
 // first.
 //
 // objc_msgSend is not variadic on arm64: each call must use the exact signature
-// of the target method. One typed alias is declared per call SHAPE this port
-// uses, all bound to the single C symbol `objc_msgSend`. The Kira compiler
-// shares one LLVM global across these aliases, and the VM/libffi path binds
-// each call by its own signature, so this is sound on both backends.
+// of the target method. So one name -- `webMsgSend` -- carries every shape this
+// port sends a message at, which is what a foreign name means: the arguments
+// pick the shape, and where two take the same things the type the call's
+// position wants picks between them. The Kira compiler shares one LLVM global
+// across the shapes and the VM/libffi path binds each call by its own
+// signature, so this is sound on both backends.
 
 // ---------------------------------------------------------------------------
 // Objective-C runtime primitives
 // ---------------------------------------------------------------------------
 
-@FFI.Extern { library: harmony_webkit; symbol: objc_getClass; abi: c; }
-function webObjcGetClass(name: CString): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: objc_getClass, abi: c }
+function webObjcGetClass(name: CString): RawPtr
 
-@FFI.Extern { library: harmony_webkit; symbol: sel_registerName; abi: c; }
-function webSel(name: CString): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: sel_registerName, abi: c }
+function webSel(name: CString): RawPtr
 
 // ---------------------------------------------------------------------------
-// objc_msgSend, one typed alias per call shape
+// objc_msgSend, one name carrying every shape it is called at
 // ---------------------------------------------------------------------------
 
 // () -> id  — property reads that answer an object: -URL, -title,
 // -absoluteString, -keyWindow, -contentView, -mainRunLoop, +distantPast, alloc.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSend(obj: RawPtr, op: RawPtr): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr): RawPtr
 
 // () -> void — -reload, -stopLoading, -goBack, -goForward, -init.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendVoid(obj: RawPtr, op: RawPtr): Void;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr): Void
 
 // () -> BOOL — -isLoading, -canGoBack, -canGoForward.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendBool(obj: RawPtr, op: RawPtr): Bool;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr): Bool
 
 // (id) -> id — +[NSURLRequest requestWithURL:], -backForwardList.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendP(obj: RawPtr, op: RawPtr, a: RawPtr): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, a: RawPtr): RawPtr
 
 // (id, id) -> void — -addSubview:.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendVoidP(obj: RawPtr, op: RawPtr, a: RawPtr): Void;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, a: RawPtr): Void
 
 // (id, id, NSUInteger, void*) -> void — -addObserver:forKeyPath:options:
 // context:, which starts the page's progress estimate arriving as events
 // instead of being polled. NSKeyValueObservingOptionNew (1) is the only option
 // the lane needs: every fire carries the value it fired for.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendAddObserver(obj: RawPtr, op: RawPtr, observer: RawPtr, keyPath: RawPtr, options: U64, context: RawPtr): Void;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, observer: RawPtr, keyPath: RawPtr, options: U64, context: RawPtr): Void
 
 // (id, id, id, id) -> void — -removeObserver:forKeyPath:, which must run before
 // the view leaves the window: an observer still registered at dealloc is an
 // exception AppKit raises on the way out.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendVoidPP(obj: RawPtr, op: RawPtr, a: RawPtr, b: RawPtr): Void;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, a: RawPtr, b: RawPtr): Void
 
 // (NSUInteger) -> void — -setAutoresizingMask:. NSViewWidthSizable (2) and
 // NSViewHeightSizable (16) ride in one mask so AppKit keeps the page's view
 // stretched over the content view during a live resize.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendVoidU(obj: RawPtr, op: RawPtr, mask: U64): Void;
-
-// -setTitle:/-setFrameName-like (id) -> void on NSString receivers reuses
-// webMsgSendVoidP.
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, mask: U64): Void
 
 // (CGRect) -> void — -setFrame:. The rect is an HFA of four doubles passed as
 // four Float scalars in v0-v3 (the same shape `-initWithContentRect:` uses in
 // Kira Graphics), because the page's rectangle arrives here in points and is
 // applied once, by the frame that measured it.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendVoidRect(obj: RawPtr, op: RawPtr, x: Float, y: Float, w: Float, h: Float): Void;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, x: Float, y: Float, w: Float, h: Float): Void
 
 // (CString) -> id — +[NSString stringWithUTF8String:], which every URL and
 // window title crosses on its way in.
@@ -90,50 +89,50 @@ function webMsgSendVoidRect(obj: RawPtr, op: RawPtr, x: Float, y: Float, w: Floa
 // tried and is BANNED here: the call segfaults against a live WKWebView. The
 // progress estimate arrives over KVO instead -- see the class construction
 // below, whose change dictionary carries an NSNumber this side reads as text.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendText(obj: RawPtr, op: RawPtr, text: CString): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, text: CString): RawPtr
 
 // () -> char* — -UTF8String, the way an NSString hands its bytes to a CString
 // return. The bytes live until the enclosing autorelease pool drains, which is
 // why every read that produces one runs inside the pool the frame pushes.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendUtf8(obj: RawPtr, op: RawPtr): CString;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr): CString
 
 // -writeToFile:atomically:encoding:error: — the session file's whole write
 // path. The error out-parameter is passed null; a failed write is answered by
 // the BOOL, which is all the caller acts on.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendWriteFile(obj: RawPtr, op: RawPtr, path: CString, atomically: Bool, encoding: U64, err: RawPtr): Bool;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, path: CString, atomically: Bool, encoding: U64, err: RawPtr): Bool
 
 // +stringWithContentsOfFile:encoding:error: — the session file's whole read
 // path. Null when the file is not there yet, which is what a first run is.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendReadFile(cls: RawPtr, op: RawPtr, path: CString, encoding: U64, err: RawPtr): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(cls: RawPtr, op: RawPtr, path: CString, encoding: U64, err: RawPtr): RawPtr
 
 // -createDirectoryAtPath:withIntermediateDirectories:attributes:error: on the
 // shared file manager, so the profile directory exists before anything is
 // written into it. Attributes are null; the error out-parameter is null too.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendCreateDir(fm: RawPtr, op: RawPtr, path: CString, flag: Bool, attrs: RawPtr, err: RawPtr): Bool;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(fm: RawPtr, op: RawPtr, path: CString, flag: Bool, attrs: RawPtr, err: RawPtr): Bool
 
 // NSHomeDirectory() — a C function in Foundation rather than a method, which
 // is why it gets its own extern: the profile is rooted where the platform
 // roots an application's state, and the platform's answer is the one to use.
-@FFI.Extern { library: harmony_webkit; symbol: NSHomeDirectory; abi: c; }
-function webNSHomeDirectory(): CString;
+@FFI.Extern { library: harmony_webkit, symbol: NSHomeDirectory, abi: c }
+function webNSHomeDirectory(): CString
 
 // initWithFrame:configuration: — the content rect is the four-scalar CGRect
 // HFA, then the configuration object.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendInitWebView(alloc: RawPtr, op: RawPtr, x: Float, y: Float, w: Float, h: Float, configuration: RawPtr): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(alloc: RawPtr, op: RawPtr, x: Float, y: Float, w: Float, h: Float, configuration: RawPtr): RawPtr
 
 // (id, id) -> Bool — -runMode:beforeDate:, the one line that keeps WebKit's
 // own machinery alive inside a frame loop that does not run the application's
 // main run loop itself. A mode and a distant-past date drain whatever sources
 // are already ready -- page loads commit, replies arrive, timers fire -- and
 // return immediately when none are, so a quiet page costs the frame nothing.
-@FFI.Extern { library: harmony_webkit; symbol: objc_msgSend; abi: c; }
-function webMsgSendRunMode(obj: RawPtr, op: RawPtr, mode: RawPtr, date: RawPtr): Bool;
+@FFI.Extern { library: harmony_webkit, symbol: objc_msgSend, abi: c }
+function webMsgSend(obj: RawPtr, op: RawPtr, mode: RawPtr, date: RawPtr): Bool
 
 // ---------------------------------------------------------------------------
 // Objective-C autorelease pool (C functions in libobjc)
@@ -143,10 +142,10 @@ function webMsgSendRunMode(obj: RawPtr, op: RawPtr, mode: RawPtr, date: RawPtr):
 // load) is an autoreleased temporary. Without a pool that is undefined
 // behaviour, so each engine frame pushes one and pops it on the way out --
 // the same discipline the Metal backend keeps around resource creation.
-@FFI.Extern { library: harmony_webkit; symbol: objc_autoreleasePoolPush; abi: c; }
-function webAutoreleasePoolPush(): RawPtr;
-@FFI.Extern { library: harmony_webkit; symbol: objc_autoreleasePoolPop; abi: c; }
-function webAutoreleasePoolPop(token: RawPtr): Void;
+@FFI.Extern { library: harmony_webkit, symbol: objc_autoreleasePoolPush, abi: c }
+function webAutoreleasePoolPush(): RawPtr
+@FFI.Extern { library: harmony_webkit, symbol: objc_autoreleasePoolPop, abi: c }
+function webAutoreleasePoolPop(token: RawPtr): Void
 
 // ---------------------------------------------------------------------------
 // Objective-C runtime class construction — used to build the KVO watcher whose
@@ -159,19 +158,19 @@ function webAutoreleasePoolPop(token: RawPtr): Void;
 // an NSNumber, which crosses as text and parses on arrival.
 // ---------------------------------------------------------------------------
 
-@FFI.Extern { library: harmony_webkit; symbol: objc_allocateClassPair; abi: c; }
-function webObjcAllocateClassPair(superclass: RawPtr, name: CString, extraBytes: U64): RawPtr;
-@FFI.Extern { library: harmony_webkit; symbol: objc_registerClassPair; abi: c; }
-function webObjcRegisterClassPair(cls: RawPtr): Void;
+@FFI.Extern { library: harmony_webkit, symbol: objc_allocateClassPair, abi: c }
+function webObjcAllocateClassPair(superclass: RawPtr, name: CString, extraBytes: U64): RawPtr
+@FFI.Extern { library: harmony_webkit, symbol: objc_registerClassPair, abi: c }
+function webObjcRegisterClassPair(cls: RawPtr): Void
 
 // The IMP signature for -observeValueForKeyPath:ofObject:change:context:: six
 // pointers (self, _cmd, keyPath, object, change dictionary, context), nothing
 // returned.
-@FFI.Callback { abi: c; params: [RawPtr, RawPtr, RawPtr, RawPtr, RawPtr, RawPtr]; result: Void; }
+@FFI.Callback { abi: c, params: [RawPtr, RawPtr, RawPtr, RawPtr, RawPtr, RawPtr], result: Void }
 struct webImpCallback {}
 
-@FFI.Extern { library: harmony_webkit; symbol: class_addMethod; abi: c; }
-function webClassAddMethod(cls: RawPtr, name: RawPtr, imp: webImpCallback, types: CString): Bool;
+@FFI.Extern { library: harmony_webkit, symbol: class_addMethod, abi: c }
+function webClassAddMethod(cls: RawPtr, name: RawPtr, imp: webImpCallback, types: CString): Bool
 
 // ---------------------------------------------------------------------------
 // Associated objects — where the port keeps its pointers
@@ -182,7 +181,7 @@ function webClassAddMethod(cls: RawPtr, name: RawPtr, imp: webImpCallback, types
 // registry where Apple already keeps one. The pointers hang off the shared
 // NSApplication as associated objects instead, which ties their lifetime to
 // the process they belong to and needs no bookkeeping on this side at all.
-@FFI.Extern { library: harmony_webkit; symbol: objc_setAssociatedObject; abi: c; }
-function webObjcSetAssociatedObject(obj: RawPtr, key: RawPtr, value: RawPtr, policy: U64): Void;
-@FFI.Extern { library: harmony_webkit; symbol: objc_getAssociatedObject; abi: c; }
-function webObjcGetAssociatedObject(obj: RawPtr, key: RawPtr): RawPtr;
+@FFI.Extern { library: harmony_webkit, symbol: objc_setAssociatedObject, abi: c }
+function webObjcSetAssociatedObject(obj: RawPtr, key: RawPtr, value: RawPtr, policy: U64): Void
+@FFI.Extern { library: harmony_webkit, symbol: objc_getAssociatedObject, abi: c }
+function webObjcGetAssociatedObject(obj: RawPtr, key: RawPtr): RawPtr
