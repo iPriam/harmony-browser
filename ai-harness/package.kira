@@ -1,0 +1,12 @@
+Package HarmonyAiHarness {
+    let version = "0.1.0"
+    let kira = "0.1.0"
+    let kind = PackageKind.Library
+    let moduleRoot = "HarmonyAiHarness"
+    let defaults = Defaults { executionMode: Backend.Hybrid, buildTarget: BuildTarget.Host }
+    let dependencies = [
+        Dependency { name: "HarmonyCore", path: "../core" },
+        Dependency { name: "HarmonyAiRuntime", path: "../ai-runtime" },
+        Dependency { name: "KiraIpc", path: "../../kira-ipc" }
+    ]
+}

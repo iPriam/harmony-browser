@@ -1,4 +1,5 @@
 import Foundation
+import HarmonyAiRuntime
 import HarmonyCore
 import KiraUI
 

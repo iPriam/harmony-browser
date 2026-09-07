@@ -1,15 +1,24 @@
 # Harmony
 
-A monorepo holding four packages. Three of them are programs that run in
-separate processes, and one is the library that lets them understand each other.
+A monorepo holding six packages. Three of them are programs that run in separate
+processes, and three are libraries the programs are built from.
 
 ```
-shell/    the window. Owns every pixel, and starts the components it finds.
-browser/  the web engine, its tabs, and everything that reaches WebKit.
-ai/       the model runtime and the harness around it.
-core/     what the three share: who they are, how they find each other, and
-          every message they exchange.
+shell/       the window. Owns every pixel, and starts the components it finds.
+browser/     the web engine, its tabs, and everything that reaches WebKit.
+ai/          the assistant component: its views, and the process it runs in.
+ai-runtime/  the seam a model runtime plugs into, and the runtime that answers
+             when no model is installed.
+ai-harness/  what drives a runtime: the turn in flight, the calls the shell
+             makes, and the deltas that go back.
+core/        what the three programs share: who they are, how they find each
+             other, and every message they exchange.
 ```
+
+Writing a model runtime means backing `ai-runtime`'s family with four functions.
+Nothing else is a dependency of doing so -- not the harness, not the protocol,
+not the component's views -- which is what makes a runtime something a person
+outside this repository can write.
 
 `core` is built on [KiraIpc](../kira-ipc), whose typed messages survive the two
 sides being built from different releases -- which is the property this whole

@@ -14,18 +14,18 @@ import HarmonyCore
 construct AiNoModelRuntime() extends AiRuntime {
     function capabilities() -> AiCapabilities {
         return AiCapabilities {
-            runtimeReady: false
-            model: ""
-            streaming: false
+            runtimeReady: false,
+            model: "",
+            streaming: false,
             note: "No model runtime is installed beside Harmony AI."
         }
     }
 
     function begin(session: AiSession, conversation: ConversationId, text: borrow String) -> AiSession {
         return AiSession {
-            conversation: conversation
-            prompt: text
-            produced: 0
+            conversation: conversation,
+            prompt: text,
+            produced: 0,
             running: true
         }
     }
@@ -38,14 +38,14 @@ construct AiNoModelRuntime() extends AiRuntime {
         // sets `done` on the last; the harness relays both the same way.
         return AiStep {
             session: AiSession {
-                conversation: session.conversation
-                prompt: session.prompt
-                produced: session.produced + 1
+                conversation: session.conversation,
+                prompt: session.prompt,
+                produced: session.produced + 1,
                 running: false
-            }
+            },
             delta: AiDelta {
-                conversation: session.conversation
-                text: "There is no model runtime installed, so nothing can answer yet."
+                conversation: session.conversation,
+                text: "There is no model runtime installed, so nothing can answer yet.",
                 kind: AiDeltaKind.Failed
             }
         }
@@ -56,9 +56,9 @@ construct AiNoModelRuntime() extends AiRuntime {
             return session
         }
         return AiSession {
-            conversation: session.conversation
-            prompt: session.prompt
-            produced: session.produced
+            conversation: session.conversation,
+            prompt: session.prompt,
+            produced: session.produced,
             running: false
         }
     }
