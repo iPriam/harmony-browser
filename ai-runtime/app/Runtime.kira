@@ -65,8 +65,8 @@ struct AiStep {
 // differently would be a runtime whose silence the harness relayed.
 function aiNoDelta() -> AiDelta {
     return AiDelta {
-        conversation: conversationNone()
-        text: ""
+        conversation: conversationNone(),
+        text: "",
         kind: AiDeltaKind.Continuing
     }
 }
