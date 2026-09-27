@@ -1,5 +1,6 @@
 import HarmonyCore
 import KiraUI
+import KCoreAnimation
 
 // The window.
 //
@@ -65,7 +66,7 @@ construct HarmonyWindow() extends Widget {
             }
 
             if harmonyShellOverlayTexture() > 0 {
-                TextureViewport(texture = harmonyShellOverlayTexture())
+                TextureViewport(texture = TextureHandle(harmonyShellOverlayTexture()))
                     .width(harmonyShellOverlayWidth())
                     .height(harmonyShellOverlayHeight())
             }

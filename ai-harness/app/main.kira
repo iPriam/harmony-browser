@@ -1,0 +1,94 @@
+// Harmony AI harness: the agent, serving clients over QUIC.
+//
+// It reads its keys, binds a channel other processes connect to, and answers
+// what they ask — a turn at a time, through the `ai-sdk` gateway, streaming what
+// it produces back. It draws nothing and owns no window. Installed beside a shell
+// it is the AI the shell talks to; run alone it is a conversation on a socket.
+//
+// The loop is the whole program: accept whoever has connected, read what each
+// has said, answer it, and yield. A turn blocks the loop while it is in flight —
+// the harness answers one conversation at a time for now — but the model work
+// yields on every poll, so the process is not a spun core while a request is out.
+
+import Foundation
+import AI
+import HarmonyCore
+
+let harnessModelName = "nvidia/nemotron-3-super-120b-a12b:free"
+
+@Main
+function entry() {
+    let run = Task { serve() }
+    let code = run.await
+    return
+}
+
+async function serve() -> Int {
+    let keys = loadAuthKeys()
+    let gateway = buildGateway(keys)
+    let note = authNote(keys)
+    let ready = authHasAnyKey(keys)
+    let agents = loadAgents()
+
+    let directory = harmonyDirectory()
+    if isDirectory(directory) == false {
+        let made = makeDirectory(directory)
+        if made == false {
+            printLine("harmony-ai-harness: could not create " + directory)
+            return 1
+        }
+    }
+
+    let server = wtServe(harnessCertificatePath())
+    if wtServerReady(server) == false {
+        printLine("harmony-ai-harness: could not bind the server")
+        return 1
+    }
+    let port = wtServerPort(server)
+    let wrotePort = writeFile(directory + "/harness.port", String(port))
+    let ignored = wrotePort
+
+    printLine("harmony-ai-harness: listening on port " + String(port))
+    printLine("harmony-ai-harness: " + note)
+
+    var channels: [WtChannel] = []
+    var sessions: [Session] = []
+
+    while wtServerReady(server) {
+        var worked = false
+
+        match wtAccept(server) {
+            Some(channel) -> {
+                let greeted = wtSendBytes(channel, encodeReady(ready, harnessModelName, note))
+                let ignoredGreet = greeted
+                channels.append(channel)
+                worked = true
+            }
+            None -> {}
+        }
+
+        for channel in channels {
+            match wtReceiveBytes(channel) {
+                Frame(bytes) -> {
+                    match decodeRequest(bytes) {
+                        Turn(turn) -> {
+                            runTurn(gateway, channel, turn.conversation, turn.text, sessions, agents)
+                            worked = true
+                        }
+                        Cancel(_) -> {}
+                        Unknown -> {}
+                    }
+                }
+                Idle -> {}
+                Closed -> {}
+            }
+        }
+
+        if worked == false {
+            sleepMilliseconds(8)
+        }
+    }
+
+    wtCloseServer(server)
+    return 0
+}

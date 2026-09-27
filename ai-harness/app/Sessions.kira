@@ -1,0 +1,35 @@
+// What the harness remembers between turns.
+//
+// A conversation is not one question: a person asks, reads the answer, and asks
+// again about it, and a model that saw only the latest question would answer as
+// though the ones before it never happened. So the harness keeps the whole
+// exchange — every user turn, every answer, every tool call and its result — and
+// hands the model all of it each time, which is what a follow-up needs to mean
+// what it says.
+//
+// A flat list keyed by the conversation id, not a map, because Kira has no
+// dictionary and the lists are short: a shell holds a handful of conversations
+// open, and a lookup is a walk either way.
+
+import Foundation
+import AI
+import HarmonyCore
+
+// One conversation's running history.
+struct Session {
+    let conversation: ConversationId
+    var history: [Message]
+}
+
+// The index of a conversation's session, creating an empty one the first time it
+// is seen. The caller adds to `sessions[index].history`.
+function sessionEnsure(sessions: borrow mut [Session], conversation: ConversationId) -> Int {
+    for index in 0..sessions.count {
+        if sessions[index].conversation == conversation {
+            return index
+        }
+    }
+    var empty: [Message] = []
+    sessions.append(Session { conversation: conversation, history: move empty })
+    return sessions.count - 1
+}

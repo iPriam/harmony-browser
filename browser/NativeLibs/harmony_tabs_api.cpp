@@ -481,6 +481,22 @@ extern "C" void hb_tabs_invoke_on_webkit_thread(void (*fn)(void*), void* context
     postCommand(std::move(command));
 }
 
+extern "C" void hb_tabs_invoke_owned_on_webkit_thread(void (*fn)(void*), void (*cleanup)(void*), void* context)
+{
+    if (!fn) {
+        if (cleanup && context)
+            cleanup(context);
+        return;
+    }
+
+    Command command;
+    command.kind = Command::Kind::Invoke;
+    command.invoke = fn;
+    command.invokeContext = context;
+    command.invokeCleanup = cleanup;
+    postCommand(std::move(command));
+}
+
 extern "C" void hb_tabs_add_page_observer(hb_tabs_page_hook on_created, hb_tabs_page_hook on_destroying, void* user_data)
 {
     if (!on_created && !on_destroying)

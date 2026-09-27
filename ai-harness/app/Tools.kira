@@ -1,0 +1,327 @@
+// The tools the harness offers the model, and how it runs one.
+//
+// This is what makes the harness an agent rather than a chat: the model can read
+// a file, edit one, run a command, and start a long one in the background — and
+// read back what each did. Every tool is an entry in `harnessTools` and an arm
+// in `runTool`, and each does its work through Foundation and nothing else.
+//
+// # Arguments arrive two ways
+//
+// A tool call's arguments are JSON. Anthropic hands them over already parsed as
+// an object; the OpenAI protocol hands them over as a JSON string. `argText` and
+// `argInt` read a field either way, so a tool body asks for `path` or `handle`
+// without knowing which protocol answered.
+
+import Foundation
+import AI
+
+// Every tool an agent may call this turn.
+//
+// `depth` is how far down the delegation this agent is: the top agent is 0 and
+// may spawn sub-agents; a sub-agent is deeper and may not, so `spawn_agent` is
+// offered only at the top. The rest are the same at every level.
+function agentTools(agents: borrow [AgentDef], depth: Int) -> [Tool] {
+    var tools: [Tool] = []
+    tools.append(getTimeTool())
+    tools.append(readFileTool())
+    tools.append(applyPatchTool())
+    tools.append(commandTool())
+    tools.append(backgroundCommandTool())
+    tools.append(checkCommandTool())
+    if depth < subAgentMaxDepth {
+        tools.append(spawnTool(agents))
+    }
+    return tools
+}
+
+// `spawn_agent`: delegate a task to a named sub-agent. Its description lists the
+// agents the model may choose, so the choice is made against what each is for.
+function spawnTool(agents: borrow [AgentDef]) -> Tool {
+    var description = "Delegate a self-contained task to a specialized sub-agent that runs with its own context and reports one result back. Available agents: "
+    for index in 0..agents.count {
+        description = description + agents[index].name + " (" + agents[index].description + ")"
+        if index < agents.count - 1 {
+            description = description + "; "
+        }
+    }
+
+    var properties: [JsonMember] = []
+    properties.append(JsonMember { name: "agent", value: stringProperty("Which sub-agent to run, by name.") })
+    properties.append(JsonMember { name: "task", value: stringProperty("The task for the sub-agent, written to stand on its own.") })
+    var required: [String] = []
+    required.append("agent")
+    required.append("task")
+    return Tool {
+        name: "spawn_agent",
+        description: description,
+        inputSchema: objectSchema(move properties, move required)
+    }
+}
+
+// --- Schemas -----------------------------------------------------------------
+
+// A string property with a description, for a tool's input schema.
+function stringProperty(description: borrow String) -> JsonValue {
+    var members: [JsonMember] = []
+    members.append(JsonMember { name: "type", value: .Text("string") })
+    members.append(JsonMember { name: "description", value: .Text(description) })
+    return .Object(move members)
+}
+
+// An `object` schema from its properties and the names among them that are
+// required.
+function objectSchema(properties: [JsonMember], required: [String]) -> Schema {
+    var requiredArray: [JsonValue] = []
+    for name in required {
+        requiredArray.append(.Text(name))
+    }
+    var members: [JsonMember] = []
+    members.append(JsonMember { name: "type", value: .Text("object") })
+    members.append(JsonMember { name: "properties", value: .Object(move properties) })
+    members.append(JsonMember { name: "required", value: .Array(move requiredArray) })
+    return Schema { json: .Object(move members) }
+}
+
+// `get_time`: no arguments, answers the wall-clock time.
+function getTimeTool() -> Tool {
+    var properties: [JsonMember] = []
+    var schema: [JsonMember] = []
+    schema.append(JsonMember { name: "type", value: .Text("object") })
+    schema.append(JsonMember { name: "properties", value: .Object(move properties) })
+    return Tool {
+        name: "get_time",
+        description: "Get the current time, in milliseconds since the Unix epoch.",
+        inputSchema: Schema { json: .Object(move schema) }
+    }
+}
+
+function readFileTool() -> Tool {
+    var properties: [JsonMember] = []
+    properties.append(JsonMember { name: "path", value: stringProperty("The path of the file to read.") })
+    var required: [String] = []
+    required.append("path")
+    return Tool {
+        name: "read_file",
+        description: "Read a file and return its contents.",
+        inputSchema: objectSchema(move properties, move required)
+    }
+}
+
+function applyPatchTool() -> Tool {
+    var properties: [JsonMember] = []
+    properties.append(JsonMember { name: "path", value: stringProperty("The path of the file to edit.") })
+    properties.append(JsonMember {
+        name: "find",
+        value: stringProperty("The exact text to replace. Empty to create or overwrite the file with `replace`.")
+    })
+    properties.append(JsonMember {
+        name: "replace",
+        value: stringProperty("The text to put in its place, or the whole new contents when `find` is empty.")
+    })
+    var required: [String] = []
+    required.append("path")
+    required.append("replace")
+    return Tool {
+        name: "apply_patch",
+        description: "Edit a file by replacing text, or create it. Replaces every occurrence of `find` with `replace`.",
+        inputSchema: objectSchema(move properties, move required)
+    }
+}
+
+function commandTool() -> Tool {
+    var properties: [JsonMember] = []
+    properties.append(JsonMember { name: "command", value: stringProperty("The shell command to run.") })
+    var required: [String] = []
+    required.append("command")
+    return Tool {
+        name: "command",
+        description: "Run a shell command and wait for it, returning its exit code and output.",
+        inputSchema: objectSchema(move properties, move required)
+    }
+}
+
+function backgroundCommandTool() -> Tool {
+    var properties: [JsonMember] = []
+    properties.append(JsonMember { name: "command", value: stringProperty("The shell command to start.") })
+    var required: [String] = []
+    required.append("command")
+    return Tool {
+        name: "background_command",
+        description: "Start a shell command without waiting, returning a handle. Read it later with check_command.",
+        inputSchema: objectSchema(move properties, move required)
+    }
+}
+
+function checkCommandTool() -> Tool {
+    var properties: [JsonMember] = []
+    properties.append(JsonMember {
+        name: "handle",
+        value: stringProperty("The handle a background_command returned.")
+    })
+    var required: [String] = []
+    required.append("handle")
+    return Tool {
+        name: "check_command",
+        description: "Check a background command: whether it finished, and its exit code and output if it has.",
+        inputSchema: objectSchema(move properties, move required)
+    }
+}
+
+// --- Running -----------------------------------------------------------------
+
+// Runs the tool a call named and answers with the result to hand back.
+//
+// `gateway`, `agents`, and `depth` are here for `spawn_agent`, which runs a
+// whole sub-agent; every other tool ignores them.
+function runTool(call: borrow ToolCall, gateway: borrow Gateway, agents: borrow [AgentDef], depth: Int) -> ToolResult {
+    printLine("harmony-ai-harness: tool call -> " + call.name)
+
+    if call.name == "spawn_agent" {
+        if depth >= subAgentMaxDepth {
+            return textResult(call.id, "a sub-agent cannot spawn further sub-agents")
+        }
+        let agentName = argText(call.input, "agent")
+        let task = argText(call.input, "task")
+        let found = agentFind(agents, agentName)
+        if found < 0 {
+            return textResult(call.id, "no such agent: " + agentName)
+        }
+        printLine("harmony-ai-harness: spawn sub-agent -> " + agentName)
+        return textResult(call.id, runSubAgent(gateway, agents, agents[found], task))
+    }
+
+    if call.name == "get_time" {
+        var members: [JsonMember] = []
+        members.append(JsonMember { name: "unix_millis", value: .Integer(unixMillis()) })
+        return ToolResult { id: call.id, output: .Object(move members) }
+    }
+
+    if call.name == "read_file" {
+        let path = argText(call.input, "path")
+        let contents = readFile(path)
+        if contents.ok {
+            return textResult(call.id, contents.text)
+        }
+        return textResult(call.id, "could not read " + path)
+    }
+
+    if call.name == "apply_patch" {
+        return runApplyPatch(call)
+    }
+
+    if call.name == "command" {
+        let command = argText(call.input, "command")
+        let result = runCommand(command)
+        return textResult(call.id, "exit " + String(result.exit) + "\n" + result.output)
+    }
+
+    if call.name == "background_command" {
+        let command = argText(call.input, "command")
+        let handle = startCommand(command)
+        var members: [JsonMember] = []
+        members.append(JsonMember { name: "handle", value: .Integer(handle) })
+        members.append(JsonMember { name: "note", value: .Text("started; read it with check_command") })
+        return ToolResult { id: call.id, output: .Object(move members) }
+    }
+
+    if call.name == "check_command" {
+        let handle = argInt(call.input, "handle")
+        if commandFinished(handle) == false {
+            return textResult(call.id, "still running")
+        }
+        let exit = commandExit(handle)
+        let output = commandOutput(handle)
+        closeCommand(handle)
+        return textResult(call.id, "exit " + String(exit) + "\n" + output)
+    }
+
+    return textResult(call.id, "unknown tool: " + call.name)
+}
+
+// Edits a file by replacing text, or creates it when `find` is empty.
+function runApplyPatch(call: borrow ToolCall) -> ToolResult {
+    let path = argText(call.input, "path")
+    let find = argText(call.input, "find")
+    let replace = argText(call.input, "replace")
+
+    if find == "" {
+        if writeFile(path, replace) {
+            return textResult(call.id, "wrote " + path)
+        }
+        return textResult(call.id, "could not write " + path)
+    }
+
+    let contents = readFile(path)
+    if contents.ok == false {
+        return textResult(call.id, "could not read " + path)
+    }
+    if contents.text.contains(find) == false {
+        return textResult(call.id, "the text to replace was not found in " + path)
+    }
+    let updated = replaceEvery(contents.text, find, replace)
+    if writeFile(path, updated) {
+        return textResult(call.id, "patched " + path)
+    }
+    return textResult(call.id, "could not write " + path)
+}
+
+// Replaces every occurrence of `find` in `text` with `replace`.
+//
+// Kira's `String` has no replace of its own, so this splits on `find` and joins
+// the pieces back with `replace` between them — which is the same result.
+function replaceEvery(text: borrow String, find: borrow String, replace: borrow String) -> String {
+    let pieces = text.split(find)
+    var out = ""
+    for index in 0..pieces.count {
+        if index > 0 {
+            out = out + replace
+        }
+        out = out + pieces[index]
+    }
+    return out
+}
+
+// A tool result carrying one text field.
+function textResult(id: borrow String, text: borrow String) -> ToolResult {
+    var members: [JsonMember] = []
+    members.append(JsonMember { name: "result", value: .Text(text) })
+    return ToolResult { id: id, output: .Object(move members) }
+}
+
+// A string argument, read whether the arguments arrived as an object or as a
+// JSON string.
+function argText(input: borrow JsonValue, name: borrow String) -> String {
+    match input {
+        Text(raw) -> {
+            match parseJson(raw) {
+                Ok(document) -> return jsonText(jsonField(document, name), "")
+                Error(_) -> return ""
+            }
+        }
+        Object(_) -> return jsonText(jsonField(input, name), "")
+        Null -> return ""
+        Boolean(_) -> return ""
+        Integer(_) -> return ""
+        Number(_) -> return ""
+        Array(_) -> return ""
+    }
+}
+
+// An integer argument, read whether the arguments arrived as an object or as a
+// JSON string.
+function argInt(input: borrow JsonValue, name: borrow String) -> Int {
+    match input {
+        Text(raw) -> {
+            match parseJson(raw) {
+                Ok(document) -> return jsonInt(jsonField(document, name), 0)
+                Error(_) -> return 0
+            }
+        }
+        Object(_) -> return jsonInt(jsonField(input, name), 0)
+        Null -> return 0
+        Boolean(_) -> return 0
+        Integer(_) -> return 0
+        Number(_) -> return 0
+        Array(_) -> return 0
+    }
+}

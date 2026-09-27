@@ -1,48 +1,34 @@
 import HarmonyCore
 import KiraGraphics
+import Foundation
 import KiraUI
-import KiraUIFoundation
+import KCoreAnimation
 
 // The shell's own runner.
 //
-// The widget library's fixes its rebuild predicate at "nothing the window shows
-// changes without an input event". That is true of an editor and false of a
-// shell: a component connects, says what version it is, and stops, all on its
-// own schedule and none of it on the person's. A shell on the library's runner
-// draws its first frame and then never notices anything arriving.
-//
-// So the arrangement is advanced from the frame hook, which runs every frame,
-// and the tree is rebuilt only when what it would draw has actually moved.
+// The retained runner rebuilds and reconciles every frame and lets the
+// compositor animate the difference, so the old "rebuild only on input" predicate
+// the shell had to override is gone: a component connecting, naming its version
+// and stopping — all on its own schedule, none of it on the person's — is simply
+// the next frame's reconcile. The arrangement is still advanced inside the build,
+// where a wrapped property can find the build's own state, before the tree is
+// produced. `ui shot --app harmony-shell` still captures this window: the
+// window's harness resolves from the environment by default.
 function RunHarmonyShellApp(
     title: String,
     width: Int,
     height: Int,
-    rootBuilder: borrow () -> KiraUIApp,
-    harness: KiraGraphics.HarnessConfig,
+    rootBuilder: borrow () -> Any Widget,
 ) {
-    RunFoundationInteractiveApp(move title, width, height, { context in
+    let userRoot: borrow () -> Any Widget = rootBuilder
+    RunKiraWindowApp(move title, width, height, { in
         kiraUiTapSeqReset()
-        // The arrangement moves forward HERE, inside the build, and not from the
-        // frame hook. A wrapped property is addressed through the build's own
-        // state, so a hook that runs outside the build reads and writes
-        // somewhere the window never sees -- which looks exactly like a
-        // component that starts and never connects.
-        harmonyShellAdvance(context.viewport)
-        let build: borrow () -> KiraUIApp = rootBuilder
-        let app = build()
-        let root = app.content
-        return root.lower(context, ModifierContext {})
-    },
-        engineFrame: harmonyShellFrame,
-        needsRebuild: harmonyShellNeedsRebuild,
-        showFpsOverlay: false,
-        showGraphicsHud: false,
-        rebuildOnResize: true,
-        windowMode: WindowMode.Windowed,
-        transparent: false,
-        opacity: 1.0,
-        harness: move harness
-    )
+        harmonyShellAdvance(Size {
+            width: kiraUiViewportWidth(),
+            height: kiraUiViewportHeight()
+        })
+        return userRoot()
+    }, harmonyShellFrame)
     return
 }
 
@@ -57,21 +43,3 @@ function harmonyShellFrame(frame: borrow mut KiraGraphics.RenderFrame) {
     return
 }
 
-// Whether to build the tree again.
-//
-// Always, for a shell, and the reason is worth stating because the obvious
-// alternative is a trap. A predicate that asked the arrangement whether anything
-// had moved would be READING WRAPPED STATE, and this runs outside the build --
-// where a wrapped property cannot find its slot and answers with its own
-// initializer instead. For a value whose initializer publishes an endpoint, that
-// is one endpoint per frame: the socket the peers are connecting to is unlinked
-// and rebound underneath them until the channel table is full, and the component
-// that did connect is holding a channel to a name that no longer exists.
-//
-// So nothing here touches the store. A shell rebuilds every frame because its
-// arrangement genuinely changes without input -- a component connects, names its
-// version, and stops, all on its own schedule -- and it is compositing live
-// surfaces from other processes anyway.
-function harmonyShellNeedsRebuild() -> Bool {
-    return true
-}

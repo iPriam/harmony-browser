@@ -6,10 +6,8 @@ Package HarmonyAi {
     let allowThinFfiShim = true
     let dependencies = [
         Dependency { name: "HarmonyCore", path: "../core" },
-        Dependency { name: "HarmonyAiRuntime", path: "../ai-runtime" },
-        Dependency { name: "HarmonyAiHarness", path: "../ai-harness" },
+        Dependency { name: "HarmonyAiClient", path: "../ai-client" },
         Dependency { name: "KiraGraphics", path: "../../kira-graphics" },
-        Dependency { name: "KiraUI", path: "../../kira-ui" },
-        Dependency { name: "OpacityUI", path: "../../opacity-ui" }
+        Dependency { name: "KiraUI", path: "../../kira-ui" }
     ]
 }

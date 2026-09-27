@@ -1,12 +1,21 @@
+// Harmony's AI harness: the agent, as a server of its own.
+//
+// This is the process a client talks to. It owns the model access — every call
+// goes through the Kira `ai-sdk` and nothing else — runs the turn: a request, a
+// tool loop, an answer, and streams what it produces back over a QUIC channel.
+// It draws nothing and owns no window; a client connects, sends turns, and reads
+// the stream.
 Package HarmonyAiHarness {
     let version = "0.1.0"
     let kira = "0.1.0"
-    let kind = PackageKind.Library
-    let moduleRoot = "HarmonyAiHarness"
-    let defaults = Defaults { executionMode: Backend.Hybrid, buildTarget: BuildTarget.Host }
+    let kind = PackageKind.App
+    let defaults = Defaults { executionMode: Backend.Vm, buildTarget: BuildTarget.Host }
+    let allowThinFfiShim = true
     let dependencies = [
         Dependency { name: "HarmonyCore", path: "../core" },
-        Dependency { name: "HarmonyAiRuntime", path: "../ai-runtime" },
-        Dependency { name: "KiraIpc", path: "../../kira-ipc" }
+        Dependency { name: "AI", path: "../../ai-sdk/core" },
+        Dependency { name: "AIOpenAI", path: "../../ai-sdk/openai" },
+        Dependency { name: "AIOpenRouter", path: "../../ai-sdk/openrouter" },
+        Dependency { name: "AIAnthropic", path: "../../ai-sdk/anthropic" }
     ]
 }

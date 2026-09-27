@@ -1,6 +1,5 @@
 import HarmonyCore
 import KiraUI
-import OpacityUI
 
 // The process.
 //
@@ -36,16 +35,11 @@ function entry() {
         height: 800,
         rootBuilder: { in
             kiraUiTapSeqReset()
-            return KiraUIApp(
-                name: "Harmony Browser",
-                content: HarmonyBrowserWindow()
-                    .theme(Opacity())
-            )
+            return HarmonyBrowserWindow()
         },
         engineFrame: { frame in
             harmonyBrowserFrame(frame)
-        },
-        needsRebuild: harmonyBrowserNeedsRebuild
+        }
     )
 
     // The runner has returned, so the window is gone and the frame thread is

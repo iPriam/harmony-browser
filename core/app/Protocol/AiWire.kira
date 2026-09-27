@@ -1,0 +1,238 @@
+import Foundation
+
+// The messages the harness and client exchange over the QUIC channel, and their
+// Kten encoding.
+//
+// Five messages: a client sends a turn to answer or a turn to cancel; the
+// harness sends its opening capabilities, observable agent activity, and the
+// pieces of an answer. Each is a tagged Kten object -- `turn`, `cancel`,
+// `ready`, `activity`, `delta` -- so a reader switches on the tag it
+// understands. Encoding produces bytes for the channel; decoding never traps,
+// answering `Unknown` for a frame this build cannot read.
+//
+// This is the WIRE beside the in-process seam in `Ai.kira`: that one is KiraIpc
+// between a shell and a component in one address space, this one is Kten between
+// a client and a harness across a socket. They name the same conversation with
+// the same `ConversationId` and the same `AiDeltaKind`, declared once next door
+// and used here rather than restated, so a value never has to be laundered from
+// one spelling of the concept into another.
+
+// --- Types -------------------------------------------------------------------
+
+// Client -> harness.
+struct AiWireTurn {
+    let conversation: ConversationId
+    let text: String
+}
+
+struct AiWireCancel {
+    let conversation: ConversationId
+}
+
+enum AiWireRequest {
+    Turn(AiWireTurn)
+    Cancel(AiWireCancel)
+    Unknown
+}
+
+// Harness -> client.
+struct AiWireReady {
+    let ready: Bool
+    let model: String
+    let note: String
+}
+
+struct AiWireDelta {
+    let conversation: ConversationId
+    let text: String
+    let kind: AiDeltaKind
+}
+
+// One observable step in an agent run. `kind` is a small presentation category
+// (`tool`, `agent`, or `status`), while `state` is `started`, `finished`, or
+// `failed`. The protocol deliberately carries text rather than an SDK enum here:
+// clients that only know older categories can still show the row instead of
+// failing to decode the whole run.
+struct AiWireActivity {
+    let conversation: ConversationId
+    let kind: String
+    let name: String
+    let detail: String
+    let state: String
+}
+
+enum AiWireEvent {
+    Ready(AiWireReady)
+    Delta(AiWireDelta)
+    Activity(AiWireActivity)
+    Unknown
+}
+
+// --- Encode ------------------------------------------------------------------
+
+function encodeTurn(conversation: ConversationId, text: borrow String) -> [U8] {
+    var fields: [KtenField] = []
+    fields.append(ktenField("conversation", ktenInt(conversation.raw)))
+    fields.append(ktenField("text", ktenText(text)))
+    return ktenEncode(ktenObject("turn", move fields))
+}
+
+function encodeCancel(conversation: ConversationId) -> [U8] {
+    var fields: [KtenField] = []
+    fields.append(ktenField("conversation", ktenInt(conversation.raw)))
+    return ktenEncode(ktenObject("cancel", move fields))
+}
+
+function encodeReady(ready: Bool, model: borrow String, note: borrow String) -> [U8] {
+    var fields: [KtenField] = []
+    fields.append(ktenField("ready", ktenBool(ready)))
+    fields.append(ktenField("model", ktenText(model)))
+    fields.append(ktenField("note", ktenText(note)))
+    return ktenEncode(ktenObject("ready", move fields))
+}
+
+function encodeDelta(conversation: ConversationId, text: borrow String, kind: borrow AiDeltaKind) -> [U8] {
+    var fields: [KtenField] = []
+    fields.append(ktenField("conversation", ktenInt(conversation.raw)))
+    fields.append(ktenField("text", ktenText(text)))
+    fields.append(ktenField("kind", ktenText(deltaKindText(kind))))
+    return ktenEncode(ktenObject("delta", move fields))
+}
+
+// The wire spelling of a delta's kind. Text, not an ordinal, so a client that
+// does not know a future kind reads it as the fallback rather than misreading a
+// number.
+function deltaKindText(kind: borrow AiDeltaKind) -> String {
+    match kind {
+        Continuing -> return "continuing"
+        Finished -> return "finished"
+        Failed -> return "failed"
+    }
+}
+
+// A kind read back from the wire; an unknown or absent value is `Continuing`,
+// the safe default that keeps a turn open rather than ending it.
+function deltaKindFromText(text: borrow String) -> AiDeltaKind {
+    if text == "finished" {
+        return .Finished
+    }
+    if text == "failed" {
+        return .Failed
+    }
+    return .Continuing
+}
+
+function encodeActivity(conversation: ConversationId, kind: borrow String, name: borrow String, detail: borrow String, state: borrow String) -> [U8] {
+    var fields: [KtenField] = []
+    fields.append(ktenField("conversation", ktenInt(conversation.raw)))
+    fields.append(ktenField("kind", ktenText(kind)))
+    fields.append(ktenField("name", ktenText(name)))
+    fields.append(ktenField("detail", ktenText(detail)))
+    fields.append(ktenField("state", ktenText(state)))
+    return ktenEncode(ktenObject("activity", move fields))
+}
+
+// --- Decode ------------------------------------------------------------------
+
+function decodeRequest(bytes: borrow [U8]) -> AiWireRequest {
+    match ktenDecode(bytes) {
+        Error(_) -> return AiWireRequest.Unknown
+        Ok(value) -> {
+            let tag = ktenTag(value)
+            if tag == "turn" {
+                return AiWireRequest.Turn(AiWireTurn {
+                    conversation: wireConversation(value),
+                    text: wireText(value, "text")
+                })
+            }
+            if tag == "cancel" {
+                return AiWireRequest.Cancel(AiWireCancel {
+                    conversation: wireConversation(value)
+                })
+            }
+            return AiWireRequest.Unknown
+        }
+    }
+}
+
+function decodeEvent(bytes: borrow [U8]) -> AiWireEvent {
+    match ktenDecode(bytes) {
+        Error(_) -> return AiWireEvent.Unknown
+        Ok(value) -> {
+            let tag = ktenTag(value)
+            if tag == "ready" {
+                return AiWireEvent.Ready(AiWireReady {
+                    ready: wireBool(value, "ready"),
+                    model: wireText(value, "model"),
+                    note: wireText(value, "note")
+                })
+            }
+            if tag == "delta" {
+                return AiWireEvent.Delta(AiWireDelta {
+                    conversation: wireConversation(value),
+                    text: wireText(value, "text"),
+                    kind: deltaKindFromText(wireText(value, "kind"))
+                })
+            }
+            if tag == "activity" {
+                return AiWireEvent.Activity(AiWireActivity {
+                    conversation: wireConversation(value),
+                    kind: wireText(value, "kind"),
+                    name: wireText(value, "name"),
+                    detail: wireText(value, "detail"),
+                    state: wireText(value, "state")
+                })
+            }
+            return AiWireEvent.Unknown
+        }
+    }
+}
+
+// --- Field helpers -----------------------------------------------------------
+//
+// A field that is absent or the wrong type reads as its type's zero, because a
+// decode that runs to a whole value and reports it is easier to reason about at
+// the call site than one that fails halfway -- a malformed frame becomes a turn
+// for conversation 0, which the harness ignores, rather than a trap.
+
+// The `conversation` field as its id type; absent or malformed reads as
+// `conversationNone`, which the harness ignores.
+function wireConversation(value: borrow Kten) -> ConversationId {
+    return ConversationId(wireInt(value, "conversation"))
+}
+
+function wireInt(value: borrow Kten, name: borrow String) -> Int {
+    match ktenGet(value, name) {
+        Ok(field) -> {
+            match ktenAsInt(field) {
+                Ok(number) -> return number
+                Error(_) -> return 0
+            }
+        }
+        Error(_) -> return 0
+    }
+}
+
+function wireText(value: borrow Kten, name: borrow String) -> String {
+    match ktenGet(value, name) {
+        Ok(field) -> {
+            match ktenAsText(field) {
+                Ok(text) -> return text
+                Error(_) -> return ""
+            }
+        }
+        Error(_) -> return ""
+    }
+}
+
+function wireBool(value: borrow Kten, name: borrow String) -> Bool {
+    match ktenGet(value, name) {
+        Ok(field) -> {
+            match ktenAsBool(field) {
+                Ok(flag) -> return flag
+                Error(_) -> return false
+            }
+        }
+        Error(_) -> return false
+    }
+}

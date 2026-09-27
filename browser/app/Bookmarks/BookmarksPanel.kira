@@ -1,4 +1,5 @@
 import KiraUI
+import Foundation
 
 // The bookmarks manager: the whole tree, in the column the window still owns.
 //

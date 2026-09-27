@@ -142,7 +142,10 @@ void postZoom(int tabId, int percent)
     auto* request = new ZoomRequest;
     request->tabId = tabId;
     request->factor = static_cast<double>(percent) / 100.0;
-    hb_tabs_invoke_on_webkit_thread(applyZoomToTab, request);
+    hb_tabs_invoke_owned_on_webkit_thread(
+        applyZoomToTab,
+        [](void* context) { delete static_cast<ZoomRequest*>(context); },
+        request);
 }
 
 std::string activeOrigin()

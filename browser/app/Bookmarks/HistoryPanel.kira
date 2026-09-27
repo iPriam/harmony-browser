@@ -1,4 +1,5 @@
 import KiraUI
+import Foundation
 
 // The history panel: where the browser has been, by the day it was there, and
 // the field that finds one page among thousands.

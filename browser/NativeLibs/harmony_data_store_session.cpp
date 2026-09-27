@@ -479,11 +479,13 @@ extern "C" void hb_data_store_session_adopt(int index, int tab_id)
     // here: the list it joins is read by the pump, and the pages it waits for
     // are that thread's.
     Adoption* owned = new Adoption(std::move(adoption));
-    hb_tabs_invoke_on_webkit_thread([](void* context) {
+    hb_tabs_invoke_owned_on_webkit_thread([](void* context) {
         Adoption* queued = static_cast<Adoption*>(context);
         g_adoptions.push_back(std::move(*queued));
         g_adoptionsPending.store(static_cast<int>(g_adoptions.size()));
         delete queued;
+    }, [](void* context) {
+        delete static_cast<Adoption*>(context);
     }, owned);
 }
 

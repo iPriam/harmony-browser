@@ -1,0 +1,305 @@
+// The agent: what the harness does with a turn.
+//
+// A turn is not one call. The person says something; the model may answer, or it
+// may ask to run a tool first. So this is a loop — generate, and if what came
+// back is a tool call, run it, hand the result back, and generate again — until
+// the model answers with text rather than another call. That answer is streamed
+// to the client a piece at a time, ending on a `done` delta.
+//
+// Everything the model does crosses the `ai-sdk` gateway and nothing else. This
+// file knows the loop and the tools; it does not know a provider, a wire, or a
+// socket.
+
+import Foundation
+import AI
+import HarmonyCore
+
+// The most tool rounds one turn may take before the harness gives up. A loop
+// that never settles is a model that keeps asking and never answers; this bounds
+// it rather than letting it run the key dry.
+let agentToolRounds = 8
+
+// The model the harness answers as. OpenRouter is listed first in the gateway,
+// so this routes there by default and elsewhere only when it is the key present.
+//
+// A function rather than a top-level `let`: the model's namespace path carries a
+// version segment, and a top-level initializer would read a numeric one as a
+// float where an expression reads it as the path it is.
+//
+// Nemotron 3 Super is free through OpenRouter and calls tools, so a fresh key
+// with no credit answers and runs `get_time` rather than being refused for a
+// paid model it cannot afford — and it stays reachable where the largest free
+// endpoints (Ultra) are perpetually overloaded.
+function harnessModel() -> Model {
+    return AI.Providers.Nvidia.Nemotron.3.Super
+}
+
+// Runs one turn to completion against the conversation's remembered history,
+// streaming what it produces over the channel.
+//
+// The turn is added to the history it belongs to, and every step of it — the
+// user's words, the model's tool calls, their results, and the final answer — is
+// kept there, so the next turn in the same conversation is answered with all of
+// it in view.
+//
+// # Cancelling between rounds
+//
+// A turn that calls tools makes several model calls in a row, and a person may
+// change their mind between them. Each model call blocks the harness, so a
+// cancel cannot land in the middle of one — but between them the channel is read
+// for a cancel of this conversation, and one there stops the turn before the
+// next call is paid for. A single-call turn cannot be stopped this way; that
+// would take turns that run concurrently, which the task model does not offer
+// (a task body takes only numbers, and a channel does not cross that boundary).
+function runTurn(gateway: borrow Gateway, channel: borrow WtChannel, conversation: ConversationId, text: borrow String, sessions: borrow mut [Session], agents: borrow [AgentDef]) {
+    let index = sessionEnsure(sessions, conversation)
+    sessions[index].history.append(.User(userTextParts(text)))
+
+    // Fold the older turns into a summary when the conversation has grown too
+    // large to keep sending whole, so a long session stays inside the context.
+    compactSession(gateway, sessions[index])
+
+    for round in 0..agentToolRounds {
+        let request = Request {
+            model: harnessModel(),
+            messages: copyMessages(sessions[index].history),
+            tools: agentTools(agents, 0),
+            outputSchema: .None,
+            providerOptions: .None
+        }
+        match gateway.generate(request) {
+            Error(problem) -> {
+                sendDelta(channel, conversation, aiErrorText(problem), .Failed)
+                return
+            }
+            Ok(response) -> {
+                if outputsHaveCall(response.output) {
+                    let results = runVisibleToolCalls(response.output, gateway, agents, channel, conversation)
+                    sessions[index].history.append(.Assistant(copyOutputs(response.output)))
+                    sessions[index].history.append(.ToolResults(results))
+                    if turnCancelled(channel, conversation) {
+                        sendDelta(channel, conversation, "", .Finished)
+                        return
+                    }
+                } else {
+                    sessions[index].history.append(.Assistant(copyOutputs(response.output)))
+                    streamOutputs(channel, conversation, response.output)
+                    return
+                }
+            }
+        }
+    }
+    sendDelta(channel, conversation, "the tool loop did not settle", .Failed)
+    return
+}
+
+// Whether the person cancelled this conversation's turn since the last round.
+//
+// One non-blocking read of the channel: a cancel for this conversation stops the
+// turn, a closed channel stops it too, and anything else (nothing waiting, or a
+// frame for something else) lets it carry on.
+function turnCancelled(channel: borrow WtChannel, conversation: ConversationId) -> Bool {
+    match wtReceiveBytes(channel) {
+        Frame(bytes) -> {
+            match decodeRequest(bytes) {
+                Cancel(cancel) -> return cancel.conversation == conversation
+                Turn(_) -> return false
+                Unknown -> return false
+            }
+        }
+        Idle -> return false
+        Closed -> return true
+    }
+}
+
+// The user's text as the one input part it is.
+function userTextParts(text: borrow String) -> [Input] {
+    var parts: [Input] = []
+    parts.append(.Text(TextPart { text: text }))
+    return parts
+}
+
+// Whether the model asked to run a tool.
+function outputsHaveCall(outputs: borrow [Output]) -> Bool {
+    for output in outputs {
+        match output {
+            Call(_) -> return true
+            Text(_) -> {}
+            Reason(_) -> {}
+            Image(_) -> {}
+            Audio(_) -> {}
+            Object(_) -> {}
+        }
+    }
+    return false
+}
+
+// Runs every tool the model called this round. `gateway`/`agents`/`depth` are
+// passed through for the one tool that delegates, `spawn_agent`.
+function runToolCalls(outputs: borrow [Output], gateway: borrow Gateway, agents: borrow [AgentDef], depth: Int) -> [ToolResult] {
+    var results: [ToolResult] = []
+    for output in outputs {
+        match output {
+            Call(call) -> results.append(runTool(call, gateway, agents, depth))
+            Text(_) -> {}
+            Reason(_) -> {}
+            Image(_) -> {}
+            Audio(_) -> {}
+            Object(_) -> {}
+        }
+    }
+    return results
+}
+
+// The top-level agent's tool runner, with the observable lifecycle sent to the
+// client. Sub-agent internals deliberately keep using `runToolCalls`: the parent
+// timeline represents a delegated agent as one managed unit, not as a flattened
+// dump of every nested tool call it made.
+function runVisibleToolCalls(outputs: borrow [Output], gateway: borrow Gateway, agents: borrow [AgentDef], channel: borrow WtChannel, conversation: ConversationId) -> [ToolResult] {
+    var results: [ToolResult] = []
+    for output in outputs {
+        match output {
+            Call(call) -> {
+                let kind = visibleToolKind(call)
+                let name = visibleToolName(call)
+                let detail = visibleToolDetail(call)
+                sendActivity(channel, conversation, kind, name, detail, "started")
+                results.append(runTool(call, gateway, agents, 0))
+                sendActivity(channel, conversation, kind, name, detail, "finished")
+            }
+            Text(_) -> {}
+            Reason(_) -> {}
+            Image(_) -> {}
+            Audio(_) -> {}
+            Object(_) -> {}
+        }
+    }
+    return results
+}
+
+function visibleToolKind(call: borrow ToolCall) -> String {
+    if call.name == "spawn_agent" {
+        return "agent"
+    }
+    return "tool"
+}
+
+function visibleToolName(call: borrow ToolCall) -> String {
+    if call.name == "spawn_agent" {
+        let name = argText(call.input, "agent")
+        if name != "" {
+            return name
+        }
+        return "sub-agent"
+    }
+    return call.name
+}
+
+function visibleToolDetail(call: borrow ToolCall) -> String {
+    if call.name == "spawn_agent" {
+        return argText(call.input, "task")
+    }
+    if call.name == "read_file" || call.name == "apply_patch" {
+        return argText(call.input, "path")
+    }
+    if call.name == "command" || call.name == "background_command" {
+        return argText(call.input, "command")
+    }
+    if call.name == "check_command" {
+        return "background command " + String(argInt(call.input, "handle"))
+    }
+    if call.name == "get_time" {
+        return "Read the current time"
+    }
+    return ""
+}
+
+// Streams a completed answer as deltas: each text run as a piece, then a `done`.
+//
+// A model may answer with reasoning and then text; only the text is the answer,
+// so that is what is sent. The closing `done` carries no text — it is the mark
+// that the turn is over, which a client draws by stopping rather than by
+// printing.
+function streamOutputs(channel: borrow WtChannel, conversation: ConversationId, outputs: borrow [Output]) {
+    for output in outputs {
+        match output {
+            Text(part) -> sendDelta(channel, conversation, part.text, .Continuing)
+            Reason(_) -> {}
+            Call(_) -> {}
+            Image(_) -> {}
+            Audio(_) -> {}
+            Object(_) -> {}
+        }
+    }
+    sendDelta(channel, conversation, "", .Finished)
+    return
+}
+
+// Sends one delta over the channel.
+function sendDelta(channel: borrow WtChannel, conversation: ConversationId, text: borrow String, kind: borrow AiDeltaKind) {
+    let ignored = wtSendBytes(channel, encodeDelta(conversation, text, kind))
+    return
+}
+
+function sendActivity(channel: borrow WtChannel, conversation: ConversationId, kind: borrow String, name: borrow String, detail: borrow String, state: borrow String) {
+    let ignored = wtSendBytes(channel, encodeActivity(conversation, kind, name, detail, state))
+    return
+}
+
+// A copy of a conversation, so a request can own its messages while the harness
+// keeps the history to add to. Each turn is rebuilt part by part rather than
+// borrowed, because the request takes its messages and the loop is not done with
+// them.
+function copyMessages(convo: borrow [Message]) -> [Message] {
+    var out: [Message] = []
+    for message in convo {
+        out.append(copyMessage(message))
+    }
+    return out
+}
+
+function copyMessage(message: borrow Message) -> Message {
+    match message {
+        User(parts) -> return .User(copyInputs(parts))
+        Assistant(outputs) -> return .Assistant(copyOutputs(outputs))
+        ToolResults(results) -> return .ToolResults(copyToolResults(results))
+    }
+}
+
+function copyInputs(parts: borrow [Input]) -> [Input] {
+    var out: [Input] = []
+    for part in parts {
+        out.append(part)
+    }
+    return out
+}
+
+function copyOutputs(outputs: borrow [Output]) -> [Output] {
+    var out: [Output] = []
+    for output in outputs {
+        out.append(output)
+    }
+    return out
+}
+
+function copyToolResults(results: borrow [ToolResult]) -> [ToolResult] {
+    var out: [ToolResult] = []
+    for result in results {
+        out.append(result)
+    }
+    return out
+}
+
+// A one-line description of why a request produced no answer, for a person.
+function aiErrorText(problem: borrow AIError) -> String {
+    match problem {
+        NoRoute(_) -> return "no configured backend serves this model"
+        UnsupportedCapability(name) -> return "the model cannot do that: " + name
+        UnsupportedInputModality(_) -> return "the model does not read that kind of input"
+        Transport(code) -> return "the service was not reached (network code " + String(code) + ")"
+        Status(status) -> return "the service answered " + String(status)
+        ServiceError(message) -> return "the service refused: " + message
+        Malformed(detail) -> return "the answer could not be read: " + detail
+        Truncated(budget) -> return "the answer ran out of room after " + String(budget) + " tokens"
+    }
+}

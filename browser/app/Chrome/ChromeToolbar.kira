@@ -1,5 +1,5 @@
 import KiraUI
-import KiraUIFoundation
+import KCoreAnimation
 
 // The bar above the page: where it has been, where it is going, what it is, and
 // how far along it is.
@@ -99,22 +99,22 @@ function harmonyChromeProgressFraction() -> Float {
 // is a fraction of the WINDOW rather than of a box the layout sized, because
 // that is what the number means: how much of the page has arrived.
 construct ChromeLoadProgress() extends Widget {
-    function lower(
-        context: borrow KiraUIFoundation.FoundationUiContext,
+    function describe(
+        context: borrow BuildContext,
         modifiers: borrow ModifierContext,
-    ) -> KiraUIFoundation.FoundationView {
+    ) -> CALayerDescription {
         let fraction = harmonyChromeProgressFraction()
         let lane = HStack(spacing = Spacing.None, alignment = VerticalAlignment.Stretch) {
             if fraction > 0.0 {
                 BackgroundFill(style = .Accent)
-                    .width(context.viewport.width * fraction)
+                    .width(context.viewportWidth * fraction)
             }
 
             Spacer()
         }
         .height(harmonyChromeProgressHeight())
         .background(BackgroundFill(style = .Surface))
-        return lane.lower(context, modifiers)
+        return lane.describe(context, modifierContextForChildren(modifiers))
     }
 }
 

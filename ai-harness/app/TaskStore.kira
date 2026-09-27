@@ -1,0 +1,522 @@
+import Foundation
+
+// C1: the task store. SI must resume cleanly after a spot-instance kill at any
+// moment (SI.md §2.1), so nothing lives only in memory. The store is
+// event-sourced: each change is one `SiRecord` written to its own file under
+// `si/events/`, and the state is a fold over those records in sequence order.
+//
+// One file per record, not one growing log: Foundation appends only by
+// rewriting a whole file, so a shared log would be O(n) per change and tearable
+// mid-write. Each record writes a `.tmp` sibling and `renamePath`s it in, so a
+// present `<seq>.json` is always whole and a kill costs at most the `.tmp` of an
+// unfinished write, which the loader never reads.
+//
+// The wire is typed, not stringly. `@Derive(Serializable)` gives every event
+// shape a `serialize_`/`deserialize_` pair, and `apply` dispatches by matching
+// the `SiEvent` enum — the compiler makes that match exhaustive, so a new event
+// kind cannot be added without handling it.
+
+// Distinct so a task id, a group id and an agent id cannot be crossed by
+// accident. Converted to `.raw` only at the display and array seams.
+@Derive(Serializable)
+distinct SiGroupId = Int
+@Derive(Serializable)
+distinct SiTaskId = Int
+@Derive(Serializable)
+distinct SiAgentId = Int
+
+// The lifecycle stage of a task or a group.
+@Derive(Serializable)
+enum SiStatus {
+    Pending
+    Running
+    Blocked
+    Done
+    Failed
+    Cancelled
+}
+
+// The role an agent plays on a task (SI.md §2.2).
+@Derive(Serializable)
+enum SiRole {
+    TopOrch
+    LowOrch
+    Adversarial
+    Worker
+    Verifier
+}
+
+// The lifecycle stage of an agent (C2). `Spawned` before it first runs; `Paused`
+// between wakes (SI.md §2.4); `Stopped` when killed; `Done`/`Failed` terminal.
+@Derive(Serializable)
+enum SiAgentStatus {
+    Spawned
+    Running
+    Paused
+    Stopped
+    Done
+    Failed
+}
+
+// --- Events ------------------------------------------------------------------
+//
+// One payload struct per event, gathered into `SiEvent`. The struct carries the
+// named fields; the enum carries which kind it is. Both derive Serializable, so
+// a record round-trips through a single `serialize_SiRecord` call.
+
+@Derive(Serializable)
+struct SiGroupCreated {
+    var id: SiGroupId
+    var title: String
+}
+
+@Derive(Serializable)
+struct SiTaskCreated {
+    var id: SiTaskId
+    var groupId: SiGroupId
+    // The task this was decomposed from, or 0 for none.
+    var parentId: SiTaskId
+    var title: String
+}
+
+@Derive(Serializable)
+struct SiTaskStatusSet {
+    var id: SiTaskId
+    var status: SiStatus
+}
+
+@Derive(Serializable)
+struct SiGroupStatusSet {
+    var id: SiGroupId
+    var status: SiStatus
+}
+
+@Derive(Serializable)
+struct SiAgentLinked {
+    var task: SiTaskId
+    var agent: SiAgentId
+    var role: SiRole
+}
+
+// An agent brought into being (C2). Bound to a task, a role, a model, a context
+// budget and a worktree — the five things SI.md §2.2 says an agent is.
+@Derive(Serializable)
+struct SiAgentSpawned {
+    var id: SiAgentId
+    var task: SiTaskId
+    var role: SiRole
+    var model: String
+    var contextBudget: Int
+    var worktree: String
+}
+
+@Derive(Serializable)
+struct SiAgentStatusSet {
+    var id: SiAgentId
+    var status: SiAgentStatus
+}
+
+@Derive(Serializable)
+enum SiEvent {
+    GroupCreated(SiGroupCreated)
+    TaskCreated(SiTaskCreated)
+    TaskStatus(SiTaskStatusSet)
+    GroupStatus(SiGroupStatusSet)
+    AgentLinked(SiAgentLinked)
+    AgentSpawned(SiAgentSpawned)
+    AgentStatusSet(SiAgentStatusSet)
+}
+
+// One event with its envelope: `seq` orders it, `ms` timestamps it. This is the
+// unit written to and read from disk.
+@Derive(Serializable)
+struct SiRecord {
+    var seq: Int
+    var ms: Int
+    var event: SiEvent
+}
+
+// --- In-memory state ---------------------------------------------------------
+
+struct SiLink {
+    var agentId: SiAgentId = SiAgentId(0)
+    var role: SiRole = .Worker
+}
+
+struct SiTask {
+    var id: SiTaskId = SiTaskId(0)
+    var groupId: SiGroupId = SiGroupId(0)
+    var parentId: SiTaskId = SiTaskId(0)
+    var title: String = ""
+    var status: SiStatus = .Pending
+    var createdMs: Int = 0
+    var updatedMs: Int = 0
+    var links: [SiLink] = []
+}
+
+struct SiGroup {
+    var id: SiGroupId = SiGroupId(0)
+    var title: String = ""
+    var status: SiStatus = .Pending
+    var createdMs: Int = 0
+}
+
+// A running agent (C2), bound to the five things SI.md §2.2 gives it. The
+// runtime in `AgentRuntime.kira` drives it; the store remembers it.
+struct SiAgent {
+    var id: SiAgentId = SiAgentId(0)
+    var taskId: SiTaskId = SiTaskId(0)
+    var role: SiRole = .Worker
+    var model: String = ""
+    var status: SiAgentStatus = .Spawned
+    var contextBudget: Int = 0
+    var worktree: String = ""
+}
+
+// The store, in memory. `nextId` is the shared id counter for groups, tasks and
+// agents; `nextSeq` the next record number. Both are recovered from the records
+// on load, so a fresh process continues the same numbering.
+class SiStore {
+    var groups: [SiGroup] = []
+    var tasks: [SiTask] = []
+    var agents: [SiAgent] = []
+    var nextId: Int = 1
+    var nextSeq: Int = 1
+
+    function createGroup(title: borrow String) -> SiGroupId {
+        let id = SiGroupId(self.nextId)
+        let event: SiEvent = .GroupCreated(SiGroupCreated { id: id, title: "" + title })
+        self.emit(SiRecord { seq: self.nextSeq, ms: unixMillis(), event: move event })
+        return id
+    }
+
+    function createTask(groupId: SiGroupId, parentId: SiTaskId, title: borrow String) -> SiTaskId {
+        let id = SiTaskId(self.nextId)
+        let event: SiEvent = .TaskCreated(SiTaskCreated {
+            id: id,
+            groupId: groupId,
+            parentId: parentId,
+            title: "" + title
+        })
+        self.emit(SiRecord { seq: self.nextSeq, ms: unixMillis(), event: move event })
+        return id
+    }
+
+    function setTaskStatus(id: SiTaskId, status: SiStatus) {
+        let event: SiEvent = .TaskStatus(SiTaskStatusSet { id: id, status: move status })
+        self.emit(SiRecord { seq: self.nextSeq, ms: unixMillis(), event: move event })
+        return
+    }
+
+    function setGroupStatus(id: SiGroupId, status: SiStatus) {
+        let event: SiEvent = .GroupStatus(SiGroupStatusSet { id: id, status: move status })
+        self.emit(SiRecord { seq: self.nextSeq, ms: unixMillis(), event: move event })
+        return
+    }
+
+    function linkAgent(task: SiTaskId, agent: SiAgentId, role: SiRole) {
+        let event: SiEvent = .AgentLinked(SiAgentLinked { task: task, agent: agent, role: move role })
+        self.emit(SiRecord { seq: self.nextSeq, ms: unixMillis(), event: move event })
+        return
+    }
+
+    // Brings an agent into being (C2): bound to a task, role, model, context
+    // budget and worktree. Returns its id.
+    function spawnAgent(task: SiTaskId, role: SiRole, model: borrow String, contextBudget: Int, worktree: borrow String) -> SiAgentId {
+        let id = SiAgentId(self.nextId)
+        let event: SiEvent = .AgentSpawned(SiAgentSpawned {
+            id: id,
+            task: task,
+            role: move role,
+            model: "" + model,
+            contextBudget: contextBudget,
+            worktree: "" + worktree
+        })
+        self.emit(SiRecord { seq: self.nextSeq, ms: unixMillis(), event: move event })
+        return id
+    }
+
+    function setAgentStatus(id: SiAgentId, status: SiAgentStatus) {
+        let event: SiEvent = .AgentStatusSet(SiAgentStatusSet { id: id, status: move status })
+        self.emit(SiRecord { seq: self.nextSeq, ms: unixMillis(), event: move event })
+        return
+    }
+
+    // The lifecycle verbs SI.md §2.2/§2.4 name, each one status transition.
+    function pauseAgent(id: SiAgentId) {
+        self.setAgentStatus(id, .Paused)
+        return
+    }
+
+    function resumeAgent(id: SiAgentId) {
+        self.setAgentStatus(id, .Running)
+        return
+    }
+
+    function stopAgent(id: SiAgentId) {
+        self.setAgentStatus(id, .Stopped)
+        return
+    }
+
+    // Writes a record to its own file atomically, then folds it into memory.
+    function emit(record: SiRecord) {
+        siEnsureDirs()
+        let path = siEventsDir() + "/" + String(record.seq) + ".json"
+        let tmp = path + ".tmp"
+        if writeFile(tmp, serialize_SiRecord(record)) == false {
+            return
+        }
+        let renamed = renamePath(tmp, path)
+        let ignored = renamed
+        self.apply(move record)
+        return
+    }
+
+    // Folds one record into the store and advances the counters past it. The one
+    // point where an event changes state, so replay on load and a live mutation
+    // reach the same result by construction.
+    function apply(record: SiRecord) {
+        let seq = record.seq
+        let ms = record.ms
+        if seq + 1 > self.nextSeq {
+            self.nextSeq = seq + 1
+        }
+        match record.event {
+            GroupCreated(p) -> {
+                self.groups.append(SiGroup { id: p.id, title: move p.title, createdMs: ms })
+                self.bumpId(p.id.raw)
+            }
+            TaskCreated(p) -> {
+                self.tasks.append(SiTask {
+                    id: p.id,
+                    groupId: p.groupId,
+                    parentId: p.parentId,
+                    title: move p.title,
+                    createdMs: ms,
+                    updatedMs: ms
+                })
+                self.bumpId(p.id.raw)
+            }
+            TaskStatus(p) -> {
+                let at = self.findTask(p.id)
+                if at >= 0 {
+                    self.tasks[at].status = move p.status
+                    self.tasks[at].updatedMs = ms
+                }
+            }
+            GroupStatus(p) -> {
+                let at = self.findGroup(p.id)
+                if at >= 0 {
+                    self.groups[at].status = move p.status
+                }
+            }
+            AgentLinked(p) -> {
+                let at = self.findTask(p.task)
+                if at >= 0 {
+                    self.tasks[at].links.append(SiLink { agentId: p.agent, role: move p.role })
+                }
+            }
+            AgentSpawned(p) -> {
+                self.agents.append(SiAgent {
+                    id: p.id,
+                    taskId: p.task,
+                    role: move p.role,
+                    model: move p.model,
+                    contextBudget: p.contextBudget,
+                    worktree: move p.worktree
+                })
+                self.bumpId(p.id.raw)
+            }
+            AgentStatusSet(p) -> {
+                let at = self.findAgent(p.id)
+                if at >= 0 {
+                    self.agents[at].status = move p.status
+                }
+            }
+        }
+        return
+    }
+
+    function bumpId(id: Int) {
+        if id + 1 > self.nextId {
+            self.nextId = id + 1
+        }
+        return
+    }
+
+    function findTask(id: SiTaskId) -> Int {
+        for index in 0..self.tasks.count {
+            if self.tasks[index].id == id {
+                return index
+            }
+        }
+        return -1
+    }
+
+    function findGroup(id: SiGroupId) -> Int {
+        for index in 0..self.groups.count {
+            if self.groups[index].id == id {
+                return index
+            }
+        }
+        return -1
+    }
+
+    function findAgent(id: SiAgentId) -> Int {
+        for index in 0..self.agents.count {
+            if self.agents[index].id == id {
+                return index
+            }
+        }
+        return -1
+    }
+
+    // A deterministic row-per-entity rendering, for inspection and for asserting
+    // that a reload reproduced the same state.
+    function report() -> String {
+        var out = ""
+        for group in self.groups {
+            out = out + "group " + String(group.id.raw) + " [" + siStatusText(group.status) + "] " + group.title + "\n"
+        }
+        for task in self.tasks {
+            out = out + "task " + String(task.id.raw) + " g" + String(task.groupId.raw) + " p" + String(task.parentId.raw)
+            out = out + " [" + siStatusText(task.status) + "] " + task.title
+            for link in task.links {
+                out = out + " {agent " + String(link.agentId.raw) + " " + siRoleText(link.role) + "}"
+            }
+            out = out + "\n"
+        }
+        for agent in self.agents {
+            out = out + "agent " + String(agent.id.raw) + " t" + String(agent.taskId.raw)
+            out = out + " " + siRoleText(agent.role) + " [" + siAgentStatusText(agent.status) + "]"
+            out = out + " model=" + agent.model + " budget=" + String(agent.contextBudget) + " wt=" + agent.worktree + "\n"
+        }
+        return out
+    }
+}
+
+// Reads every record under `si/events/` and folds them in sequence order. An
+// absent store yields an empty one. Files are whole by construction (atomic
+// rename), so a record either round-trips or the load stops — there is no
+// partial state.
+function siLoad() -> SiStore {
+    var store = SiStore {}
+    let dir = siEventsDir()
+    if isDirectory(dir) == false {
+        return store
+    }
+
+    // The highest sequence present, taken from the filenames.
+    var maxSeq = 0
+    for name in listDirectory(dir).names {
+        if name.endsWith(".json") {
+            let seq = siSeqOfName(name)
+            if seq > maxSeq {
+                maxSeq = seq
+            }
+        }
+    }
+
+    // Apply in order by reading `<seq>.json` directly; a gap is simply absent.
+    for seq in 1..(maxSeq + 1) {
+        let path = dir + "/" + String(seq) + ".json"
+        if fileExists(path) {
+            let contents = readFile(path)
+            if contents.ok {
+                store.apply(deserialize_SiRecord(contents.text))
+            }
+        }
+    }
+    return store
+}
+
+// The leading integer of an event filename (`42.json` -> 42), read up to the
+// first non-digit.
+function siSeqOfName(name: borrow String) -> Int {
+    var value = 0
+    for index in 0..name.count {
+        let code = Int(name.charAt(index))
+        if code < 48 || code > 57 {
+            return value
+        }
+        value = value * 10 + (code - 48)
+    }
+    return value
+}
+
+// --- Layout ------------------------------------------------------------------
+
+// The store root: `HARMONY_SI_DIR` when set, else `~/.harmony/si`. The override
+// is the first config seam (SI.md §2.5) and isolates a test run from a real one.
+function siDir() -> String {
+    let configured = environmentValue("HARMONY_SI_DIR")
+    if configured != "" {
+        return configured
+    }
+    return harmonyDirectory() + "/si"
+}
+
+function siEventsDir() -> String {
+    return siDir() + "/events"
+}
+
+// Makes the events directory and every ancestor, idempotently; `makeDirectory`
+// does not create parents.
+function siEnsureDirs() {
+    let path = siEventsDir()
+    let absolute = path.startsWith("/")
+    var acc = ""
+    for segment in path.split("/") {
+        if segment == "" {
+            continue
+        }
+        if acc == "" {
+            if absolute {
+                acc = "/" + segment
+            } else {
+                acc = segment
+            }
+        } else {
+            acc = acc + "/" + segment
+        }
+        let made = makeDirectory(acc)
+        let ignored = made
+    }
+    return
+}
+
+// --- Display -----------------------------------------------------------------
+
+// A short label for a status, for `report`. Persistence goes through Serde, not
+// this — this is only for a person reading the state.
+function siStatusText(status: borrow SiStatus) -> String {
+    match status {
+        Pending -> return "pending"
+        Running -> return "running"
+        Blocked -> return "blocked"
+        Done -> return "done"
+        Failed -> return "failed"
+        Cancelled -> return "cancelled"
+    }
+}
+
+function siRoleText(role: borrow SiRole) -> String {
+    match role {
+        TopOrch -> return "top_orch"
+        LowOrch -> return "low_orch"
+        Adversarial -> return "adversarial"
+        Worker -> return "worker"
+        Verifier -> return "verifier"
+    }
+}
+
+function siAgentStatusText(status: borrow SiAgentStatus) -> String {
+    match status {
+        Spawned -> return "spawned"
+        Running -> return "running"
+        Paused -> return "paused"
+        Stopped -> return "stopped"
+        Done -> return "done"
+        Failed -> return "failed"
+    }
+}

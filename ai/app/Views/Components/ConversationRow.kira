@@ -43,5 +43,6 @@ construct AiNewConversationRow() extends Widget {
             Text("New Conversation")
                 .typography(.subheadline)
         }
+        .onClick(aiNewConversation)
     }
 }

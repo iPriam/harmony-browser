@@ -1,0 +1,152 @@
+// Keeping a long conversation inside the model's context.
+//
+// A conversation the harness remembers grows every turn, and a model has a
+// ceiling on what it can be sent. So when a conversation's history passes a
+// budget, the older turns are folded into one summary and the recent tail is
+// kept in full — the model still knows what was decided and what is unfinished,
+// without being handed the whole transcript every turn.
+//
+// The summary is written by the model itself: the same gateway, one call, no
+// tools. A summarize that fails changes nothing — the transcript stands — so a
+// bad network moment never loses the conversation.
+
+import Foundation
+import AI
+
+// The character budget a conversation may reach before its older turns are
+// summarized. A stand-in for a token budget at roughly four characters a token,
+// so this keeps about four thousand tokens of history in full.
+let compactionCharBudget = 16000
+
+// How many of the most recent messages are kept verbatim. The summary stands in
+// for everything before them.
+let compactionKeepRecent = 6
+
+// Summarizes a conversation's older turns when it has grown past the budget,
+// replacing them with one summary message and keeping the recent tail in full.
+function compactSession(gateway: borrow Gateway, session: borrow mut Session) {
+    if historyChars(session.history) <= compactionCharBudget {
+        return
+    }
+    if session.history.count <= compactionKeepRecent {
+        return
+    }
+
+    let splitAt = session.history.count - compactionKeepRecent
+    let transcript = renderRange(session.history, 0, splitAt)
+    let summary = summarizeTranscript(gateway, transcript)
+
+    var rebuilt: [Message] = []
+    var summaryParts: [Input] = []
+    summaryParts.append(.Text(TextPart { text: "[Summary of earlier conversation]\n" + summary }))
+    rebuilt.append(.User(move summaryParts))
+    for index in splitAt..session.history.count {
+        rebuilt.append(copyMessage(session.history[index]))
+    }
+    let rebuiltCount = rebuilt.count
+    session.history = rebuilt
+    printLine("harmony-ai-harness: compacted conversation to " + String(rebuiltCount) + " messages")
+    return
+}
+
+// Asks the model to summarize a transcript, or returns the transcript unchanged
+// when it cannot answer, so compaction never loses what it was folding.
+function summarizeTranscript(gateway: borrow Gateway, transcript: borrow String) -> String {
+    var parts: [Input] = []
+    parts.append(.Text(TextPart {
+        text: "Summarize the conversation below concisely. Preserve facts stated, decisions made, file paths, command results, and any unfinished task. Write it as notes, not prose.\n\n" + transcript
+    }))
+    var messages: [Message] = []
+    messages.append(.User(move parts))
+    let request = Request {
+        model: harnessModel(),
+        messages: move messages,
+        tools: [],
+        outputSchema: .None,
+        providerOptions: .None
+    }
+    match gateway.generate(request) {
+        Error(_) -> return transcript
+        Ok(response) -> return firstText(response.output)
+    }
+}
+
+// The text of the first (and usually only) text output.
+function firstText(outputs: borrow [Output]) -> String {
+    var text = ""
+    for output in outputs {
+        match output {
+            Text(part) -> text = text + part.text
+            Reason(_) -> {}
+            Call(_) -> {}
+            Image(_) -> {}
+            Audio(_) -> {}
+            Object(_) -> {}
+        }
+    }
+    return text
+}
+
+// The rough size of a history, as the characters its turns render to.
+function historyChars(history: borrow [Message]) -> Int {
+    var total = 0
+    for message in history {
+        total = total + renderMessage(message).count
+    }
+    return total
+}
+
+// A run of messages rendered as a plain transcript, for summarizing.
+function renderRange(history: borrow [Message], start: Int, end: Int) -> String {
+    var text = ""
+    for index in start..end {
+        text = text + renderMessage(history[index]) + "\n"
+    }
+    return text
+}
+
+// One message as a line of transcript: who said it, and what.
+function renderMessage(message: borrow Message) -> String {
+    match message {
+        User(parts) -> return "User: " + renderInputs(parts)
+        Assistant(outputs) -> return "Assistant: " + renderOutputs(outputs)
+        ToolResults(results) -> return "Tool: " + renderToolResults(results)
+    }
+}
+
+function renderInputs(parts: borrow [Input]) -> String {
+    var text = ""
+    for part in parts {
+        match part {
+            Text(inner) -> text = text + inner.text
+            Image(_) -> text = text + "[image]"
+            Audio(_) -> text = text + "[audio]"
+            Video(_) -> text = text + "[video]"
+            File(_) -> text = text + "[file]"
+        }
+    }
+    return text
+}
+
+function renderOutputs(outputs: borrow [Output]) -> String {
+    var text = ""
+    for output in outputs {
+        match output {
+            Text(part) -> text = text + part.text
+            Call(call) -> text = text + "[tool " + call.name + "]"
+            Reason(_) -> {}
+            Image(_) -> {}
+            Audio(_) -> {}
+            Object(_) -> {}
+        }
+    }
+    return text
+}
+
+function renderToolResults(results: borrow [ToolResult]) -> String {
+    var text = ""
+    for result in results {
+        text = text + writeJson(result.output)
+    }
+    return text
+}

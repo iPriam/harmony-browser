@@ -49,6 +49,7 @@ std::string g_home { "https://www.google.com/" };
 
 std::atomic<bool> g_ready { false };
 std::atomic<bool> g_shutdownRequested { false };
+std::atomic<bool> g_stopping { false };
 std::atomic<HWND> g_parentWindow { nullptr };
 std::atomic<HWND> g_activeChild { nullptr };
 std::atomic<int> g_boundsX { 0 };
@@ -246,6 +247,10 @@ void runCommand(Command& command)
     case Command::Kind::Invoke:
         if (command.invoke)
             command.invoke(command.invokeContext);
+        // An owned invoke's callback consumes its context on success. Disarm
+        // cancellation so queue teardown cannot free it a second time.
+        command.invokeContext = nullptr;
+        command.invokeCleanup = nullptr;
         break;
     case Command::Kind::Shutdown:
         g_shutdownRequested.store(true);
@@ -562,8 +567,19 @@ const char* desktopUserAgent()
 
 void postCommand(Command&& command)
 {
+    if (g_stopping.load()) {
+        if (command.kind == Command::Kind::Invoke && command.invokeCleanup && command.invokeContext)
+            command.invokeCleanup(command.invokeContext);
+        return;
+    }
     {
         std::lock_guard<std::mutex> lock(g_commandMutex);
+        // Teardown may have begun while this caller was waiting for the queue.
+        if (g_stopping.load()) {
+            if (command.kind == Command::Kind::Invoke && command.invokeCleanup && command.invokeContext)
+                command.invokeCleanup(command.invokeContext);
+            return;
+        }
         g_commands.push_back(std::move(command));
     }
     if (g_commandEvent)
@@ -593,6 +609,7 @@ bool startWebKitThread()
     }
 
     g_shutdownRequested.store(false);
+    g_stopping.store(false);
     g_thread = CreateThread(nullptr, 0, webKitThreadMain, nullptr, 0, nullptr);
     if (!g_thread) {
         setError("could not start the WebKit thread");
@@ -608,12 +625,27 @@ void stopWebKitThread()
         std::lock_guard<std::mutex> lock(g_startMutex);
         thread = g_thread;
         g_thread = nullptr;
+        g_stopping.store(true);
     }
     if (!thread)
         return;
 
-    postSimpleCommand(Command::Kind::Shutdown);
-    WaitForSingleObject(thread, 5000);
+    // Teardown owns the final queue insertion. Once g_stopping is set, ordinary
+    // producers are refused (and owned invoke payloads are cancelled) so no work
+    // can land behind Shutdown and become unreachable.
+    {
+        std::lock_guard<std::mutex> lock(g_commandMutex);
+        Command command;
+        command.kind = Command::Kind::Shutdown;
+        g_commands.push_back(std::move(command));
+    }
+    if (g_commandEvent)
+        SetEvent(g_commandEvent);
+
+    // The queue and event are thread-owned synchronization state. Destroying
+    // either while WebKit is still running turns a slow shutdown into a race or
+    // use-after-close, so wait for the worker to finish before reclaiming them.
+    WaitForSingleObject(thread, INFINITE);
     CloseHandle(thread);
 
     if (g_commandEvent) {
@@ -622,6 +654,13 @@ void stopWebKitThread()
     }
 
     std::lock_guard<std::mutex> lock(g_commandMutex);
+    for (Command& command : g_commands) {
+        if (command.kind == Command::Kind::Invoke && command.invokeCleanup && command.invokeContext) {
+            command.invokeCleanup(command.invokeContext);
+            command.invokeContext = nullptr;
+            command.invokeCleanup = nullptr;
+        }
+    }
     g_commands.clear();
 }
 

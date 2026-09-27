@@ -43,6 +43,7 @@ int hb_tabs_on_webkit_thread(void);
 // the caller is already on that thread would reorder it ahead of that queue, so
 // it is queued either way.
 void hb_tabs_invoke_on_webkit_thread(void (*fn)(void*), void* context);
+void hb_tabs_invoke_owned_on_webkit_thread(void (*fn)(void*), void (*cleanup)(void*), void* context);
 
 // Called on the WebKit thread with a tab's page, once just after it is created
 // and once just before it is destroyed. This is where a module installs a

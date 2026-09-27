@@ -181,10 +181,12 @@ void harmony_process_stop(harmony_process process) {
     if (slot == 0) {
         return;
     }
-    /* Windows has no polite signal for a windowless process. The component is
-     * expected to exit when its channel to the shell closes, which is the
-     * ordinary path; this is the backstop for one that does not. */
-    TerminateProcess(slot->handle, 0);
+    /* Closing IPC is the polite stop. Give the component time to flush its own
+     * state before forced termination becomes the bounded backstop. */
+    if (WaitForSingleObject(slot->handle, 2000) == WAIT_TIMEOUT) {
+        TerminateProcess(slot->handle, 1);
+        WaitForSingleObject(slot->handle, 2000);
+    }
 }
 
 void harmony_process_release(harmony_process process) {
@@ -248,7 +250,20 @@ void harmony_process_stop(harmony_process process) {
     if (slot == 0 || slot->reaped) {
         return;
     }
+    for (int attempt = 0; attempt < 20; attempt += 1) {
+        int status = 0;
+        pid_t answered = waitpid(slot->pid, &status, WNOHANG);
+        if (answered == slot->pid || answered < 0) {
+            slot->reaped = 1;
+            return;
+        }
+        usleep(100000);
+    }
     kill(slot->pid, SIGTERM);
+    int status = 0;
+    if (waitpid(slot->pid, &status, 0) == slot->pid) {
+        slot->reaped = 1;
+    }
 }
 
 void harmony_process_release(harmony_process process) {

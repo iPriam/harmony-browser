@@ -1,21 +1,147 @@
 import KiraUI
 
-// The assistant's main area: the conversation, or what is missing instead.
+// The assistant's document surface is an agent workspace rather than a chat
+// transcript. The shell still receives one texture for this whole region; the
+// structure below is ordinary KiraUI lowered into that texture by AiSurfaces.
 //
-// An assistant with no model installed is a real arrangement rather than a
-// fault -- the runtime is installed separately from the shell, exactly as the
-// web engine is -- so this says what is missing and what to do about it, in the
-// place a person is already looking.
+// The shape follows the Codex app: a compact task header, a scrollable run with
+// first-class tool and delegated-agent activity, the answer, and a persistent
+// composer at the foot of the document.
 
 construct AiContent() extends Widget {
     body {
         ZStack(alignment = StackAlignment.Center) {
             BackgroundFill(style = .Window)
 
-            if aiHasConversation() {
-                AiTranscript()
-            } else {
-                AiNothingAsked()
+            VStack(spacing = Spacing.None, alignment = HorizontalAlignment.Leading) {
+                AiRunHeader()
+
+                Divider()
+                    .themeBorder(.Subtle)
+
+                Expanded(flex = 1) {
+                    VStack(spacing = Spacing.None) {
+                        if aiHasConversation() {
+                            AiRunDocument()
+                        } else {
+                            AiNothingAsked()
+                        }
+                    }
+                    .fillWidth()
+                    .fillHeight()
+                }
+
+                Divider()
+                    .themeBorder(.Subtle)
+
+                AiComposer()
+            }
+            .fillWidth()
+            .fillHeight()
+        }
+        .fillWidth()
+        .fillHeight()
+    }
+}
+
+// --- Header ------------------------------------------------------------------
+
+construct AiRunHeader() extends Widget {
+    body {
+        Inset(horizontal = Spacing.Medium, vertical = Spacing.ExtraSmall) {
+            HStack(spacing = Spacing.Small, alignment = VerticalAlignment.Center) {
+                VStack(spacing = Spacing.None, alignment = HorizontalAlignment.Leading) {
+                    Text(aiRunHeaderTitle())
+                        .typography(.subheadline)
+
+                    Text(aiRuntimeLabel())
+                        .typography(.caption)
+                        .foregroundColor(.Tertiary)
+                }
+
+                Spacer()
+
+                AiRunStatus()
+
+                if aiIsRunning() {
+                    ControlSlot() {
+                        Icon(.Stop)
+                            .imageScale(.Small)
+                    }
+                    .foregroundColor(.Secondary)
+                    .onClick(aiRequestCancel)
+                }
+            }
+            .height(42.0)
+        }
+    }
+}
+
+construct AiRunStatus() extends Widget {
+    body {
+        HStack(spacing = Spacing.ExtraSmall, alignment = VerticalAlignment.Center) {
+            Icon(aiRunStatusSymbol())
+                .imageScale(.Small)
+                .foregroundColor(aiRunStatusColor())
+
+            Text(aiRunStatusText())
+                .typography(.caption)
+                .foregroundColor(.Secondary)
+        }
+        .hugWidth()
+    }
+}
+
+function aiRunHeaderTitle() -> String {
+    if aiHasConversation() {
+        return aiCurrentTitle()
+    }
+    return "Agent workspace"
+}
+
+function aiRunStatusSymbol() -> Symbol {
+    if aiIsRunning() {
+        return Symbol.CircleFill
+    }
+    if aiHasConversation() {
+        return Symbol.CheckmarkCircle
+    }
+    return Symbol.Sparkles
+}
+
+function aiRunStatusColor() -> PrimaryColor {
+    if aiIsRunning() {
+        return PrimaryColor.Accent
+    }
+    return PrimaryColor.Tertiary
+}
+
+function aiRunStatusText() -> String {
+    if aiIsRunning() {
+        return "Working"
+    }
+    if aiHasConversation() {
+        return "Complete"
+    }
+    return "Ready"
+}
+
+// --- Run document ------------------------------------------------------------
+
+construct AiRunDocument() extends Widget {
+    body {
+        ScrollView(key = 41010) {
+            Inset(horizontal = Spacing.Large, vertical = Spacing.Medium) {
+                VStack(spacing = Spacing.Large, alignment = HorizontalAlignment.Leading) {
+                    AiPromptBlock()
+
+                    if aiActivityCount() > 0 {
+                        AiActivityFeed()
+                    }
+
+                    AiAnswerBlock()
+                }
+                .fillWidth()
             }
         }
         .fillWidth()
@@ -23,12 +149,115 @@ construct AiContent() extends Widget {
     }
 }
 
-// The turn in flight: what was asked, and what has come back so far.
-construct AiTranscript() extends Widget {
+construct AiPromptBlock() extends Widget {
     body {
-        VStack(spacing = Spacing.Medium, alignment = HorizontalAlignment.Leading) {
-            Text(aiCurrentTitle())
-                .typography(.title3)
+        VStack(spacing = Spacing.ExtraSmall, alignment = HorizontalAlignment.Leading) {
+            Text("You")
+                .typography(.caption)
+                .foregroundColor(.Tertiary)
+
+            Inset(horizontal = Spacing.Small, vertical = Spacing.Small) {
+                Text(aiCurrentPrompt())
+                    .typography(.body)
+                    .foregroundColor(.Primary)
+            }
+            .background(RoundedRectangle(radius = CornerRadius.Medium))
+            .backgroundStyle(.Control)
+            .themeBorder(.Subtle)
+            .fillWidth()
+        }
+        .fillWidth()
+    }
+}
+
+construct AiActivityFeed() extends Widget {
+    body {
+        VStack(spacing = Spacing.Small, alignment = HorizontalAlignment.Leading) {
+            HStack(spacing = Spacing.ExtraSmall, alignment = VerticalAlignment.Center) {
+                Text("Activity")
+                    .typography(.caption)
+                    .foregroundColor(.Tertiary)
+
+                Text(String(aiActivityCount()))
+                    .typography(.caption)
+                    .foregroundColor(.Quaternary)
+            }
+
+            For(index in indices(aiActivityCount())) {
+                AiActivityRow(activity = aiActivityAt(index))
+            }
+        }
+        .fillWidth()
+    }
+}
+
+construct AiActivityRow(activity: AiActivityFact) extends Widget {
+    body {
+        Inset(horizontal = Spacing.Small, vertical = Spacing.ExtraSmall) {
+            HStack(spacing = Spacing.Small, alignment = VerticalAlignment.Center) {
+                Icon(aiActivitySymbol(activity.kind))
+                    .imageScale(.Small)
+                    .foregroundColor(aiActivityColor(activity.state))
+
+                Expanded(flex = 1) {
+                    VStack(spacing = Spacing.None, alignment = HorizontalAlignment.Leading) {
+                        Text(aiActivityName(activity.kind, activity.name))
+                            .typography(.subheadline)
+
+                        if activity.detail.count > 0 {
+                            Text(activity.detail)
+                                .typography(.caption)
+                                .foregroundColor(.Tertiary)
+                        }
+                    }
+                }
+
+                Text(aiActivityStateLabel(activity.state))
+                    .typography(.caption)
+                    .foregroundColor(aiActivityColor(activity.state))
+            }
+            .height(42.0)
+        }
+        .background(RoundedRectangle(radius = CornerRadius.Small))
+        .backgroundStyle(.Raised)
+        .themeBorder(.Subtle)
+        .fillWidth()
+    }
+}
+
+function aiActivitySymbol(kind: borrow String) -> Symbol {
+    if kind == "agent" {
+        return Symbol.Person2
+    }
+    return Symbol.Command
+}
+
+function aiActivityColor(state: borrow String) -> PrimaryColor {
+    if state == "started" {
+        return PrimaryColor.Accent
+    }
+    return PrimaryColor.Tertiary
+}
+
+function aiActivityName(kind: borrow String, name: borrow String) -> String {
+    if kind == "agent" {
+        return name + " agent"
+    }
+    return name
+}
+
+construct AiAnswerBlock() extends Widget {
+    body {
+        VStack(spacing = Spacing.ExtraSmall, alignment = HorizontalAlignment.Leading) {
+            HStack(spacing = Spacing.ExtraSmall, alignment = VerticalAlignment.Center) {
+                Icon(.Sparkles)
+                    .imageScale(.Small)
+                    .foregroundColor(.Accent)
+
+                Text("Harmony")
+                    .typography(.caption)
+                    .foregroundColor(.Tertiary)
+            }
 
             Text(aiCurrentAnswer())
                 .typography(.body)
@@ -38,21 +267,66 @@ construct AiTranscript() extends Widget {
     }
 }
 
-// What the area says when nothing has been asked.
-//
-// One mark, one sentence, one instruction -- the same three the browser's empty
-// page area has, because they answer the same question: a person looking at an
-// empty region needs to know what to DO, not to be told again what they can
-// already see.
+// --- Composer ----------------------------------------------------------------
+
+construct AiComposer() extends Widget {
+    body {
+        Inset(horizontal = Spacing.Medium, vertical = Spacing.Small) {
+            HStack(spacing = Spacing.Small, alignment = VerticalAlignment.Center) {
+                Expanded(flex = 1) {
+                    TextField(
+                        key = aiComposerKey(),
+                        initial = "",
+                        placeholder = aiComposerPlaceholder(),
+                        width = 520.0,
+                        height = 34.0,
+                        onSubmit = aiSubmitComposer
+                    )
+                    .foregroundColor(.Primary)
+                }
+
+                ControlSlot(active = false) {
+                    Icon(.PaperplaneFill)
+                        .imageScale(.Small)
+                }
+                .foregroundColor(.Accent)
+                .onClick(aiSubmitComposer)
+
+                ControlSlot(active = false) {
+                    Icon(.Plus)
+                        .imageScale(.Small)
+                }
+                .foregroundColor(.Secondary)
+                .onClick(aiNewConversation)
+            }
+            .height(44.0)
+        }
+        .backgroundStyle(.Surface)
+        .fillWidth()
+    }
+}
+
+function aiComposerPlaceholder() -> String {
+    if aiIsRunning() {
+        return "Add a follow-up…"
+    }
+    if aiHasConversation() {
+        return "Ask a follow-up…"
+    }
+    return "Give Harmony a task…"
+}
+
+// The empty document keeps the same hierarchy as a run: the header and composer
+// stay fixed while only the middle tells the person there is nothing to inspect.
 construct AiNothingAsked() extends Widget {
     body {
         VStack(spacing = Spacing.Medium, alignment = HorizontalAlignment.Center) {
+            Spacer()
+
             Icon(.Sparkles)
                 .typography(.title1)
                 .imageScale(.ExtraLarge)
                 .foregroundColor(.Quaternary)
-
-            FixedGap(width = 1.0, height = 2.0)
 
             Text(aiHeadline())
                 .typography(.title2)
@@ -60,8 +334,10 @@ construct AiNothingAsked() extends Widget {
             Text(aiExplanation())
                 .typography(.subheadline)
                 .foregroundColor(.Secondary)
+
+            Spacer()
         }
-        .hugWidth()
-        .hugHeight()
+        .fillWidth()
+        .fillHeight()
     }
 }

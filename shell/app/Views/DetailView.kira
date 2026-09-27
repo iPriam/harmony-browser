@@ -1,5 +1,6 @@
 import HarmonyCore
 import KiraUI
+import KCoreAnimation
 
 // The window's document column: where a component's surface is composited.
 //
@@ -26,7 +27,7 @@ construct DetailView() extends Widget {
                 Expanded(flex = 1) {
                     ZStack(alignment = StackAlignment.Center) {
                         if harmonyShellDocumentTexture() > 0 {
-                            TextureViewport(texture = harmonyShellDocumentTexture())
+                            TextureViewport(texture = TextureHandle(harmonyShellDocumentTexture()))
                         } else {
                             NoSurfaceView()
                         }
@@ -38,7 +39,7 @@ construct DetailView() extends Widget {
                 // the document rather than over it: a panel drawn over the page
                 // is a panel that hides what it is being asked about.
                 if harmonyShellInspectorTexture() > 0 {
-                    TextureViewport(texture = harmonyShellInspectorTexture())
+                    TextureViewport(texture = TextureHandle(harmonyShellInspectorTexture()))
                         .width(harmonyShellInspectorTextureWidth())
                 }
             }

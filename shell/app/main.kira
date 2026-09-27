@@ -2,7 +2,6 @@ import Foundation
 import HarmonyCore
 import KiraGraphics
 import KiraUI
-import OpacityUI
 
 // Harmony's shell: the window, and the components it hosts.
 //
@@ -30,17 +29,12 @@ function runHarmonyShell() {
         title = "Harmony",
         width = 1280,
         height = 820,
+        // The window's harness resolves from the environment by default, which is
+        // what lets `ui shot --app harmony-shell` capture this window without the
+        // shell knowing it is being captured.
         rootBuilder = { in
-            return KiraUIApp(
-                name: "Harmony",
-                content: HarmonyWindow()
-                    .theme(Opacity())
-            )
-        },
-        // Nothing given, so KiraGraphics resolves the harness from the
-        // environment -- which is what lets `ui shot --app harmony-shell`
-        // capture this window without the shell knowing it is being captured.
-        harness = KiraGraphics.HarnessConfig {}
+            return HarmonyWindow()
+        }
     )
     return
 }

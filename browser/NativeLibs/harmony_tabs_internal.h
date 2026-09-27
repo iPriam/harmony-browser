@@ -174,6 +174,10 @@ struct Command {
     std::string url;
     void (*invoke)(void*) { nullptr };
     void* invokeContext { nullptr };
+    // Present only for an invoke whose context is owned by the queue. The
+    // callback consumes the context when it runs; shutdown calls this cleanup
+    // instead when the command never executes.
+    void (*invokeCleanup)(void*) { nullptr };
 };
 
 struct PageObserver {

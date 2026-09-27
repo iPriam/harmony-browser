@@ -1,46 +1,52 @@
 import Foundation
 import HarmonyCore
-import HarmonyAiHarness
-import HarmonyAiRuntime
+import HarmonyAiClient
 import KiraIpc
 
-// Harmony AI: a runtime, the harness that drives it, and the views that show it,
-// in a process of their own.
+// Harmony AI: the conversation a person sees, and the bridge behind it.
 //
-// The runtime seam and the harness are packages beside this one, so what is
-// left here is the component: which runtime is loaded, what is drawn, and the
-// loop that ties the two to the shell.
+// The window is the shell's and every pixel in it; the answers are the harness's,
+// a process of its own reached over a QUIC channel. What is left here is the
+// component between them: it draws the conversation into the shell's surfaces,
+// forwards what the person asks to the harness, and turns the stream that comes
+// back into both the view it draws and the deltas the shell hears.
 //
-// It owns no window. The shell owns the window and every pixel in it; this
-// answers what the shell asks and announces what it produces. That is what makes
-// the AI runtime installable on its own: a person who installs it beside Harmony
-// Browser gets AI in the browser they already have, and a person who installs it
-// alone gets a shell with a conversation in it and no web engine behind them.
-//
-// The loop is the whole program. It settles the attachment, serves what arrives
-// and lets the runtime produce whatever it has, once per turn, until the shell
-// goes.
+// It embeds no model and no runtime. Installing the harness beside it is what
+// makes AI answer; without one, this still runs and draws that there is none.
 
 function harmonyAiVersion() -> String {
     return "0.1.0"
 }
 
+// How long the loop waits when neither the shell nor the harness had anything.
+// A frame, so nothing the shell draws could show a change sooner anyway.
+let aiIdleMilliseconds = 16
+
 @Main
 function entry() {
     var attachment = harmonyAttach(HarmonyComponent.Ai, harmonyAiVersion())
-    let runtime = AiNoModelRuntime()
-    var harness = AiHarness {}
-    // The pixels, once the window has said how big they are.
-    //
-    // Not at startup: a texture is opened at an extent, the extent is the
-    // window's to decide, and a component that opened one before being told
-    // would be opening it at a guess.
     var surfaces = AiSurfaces {}
     var reported = false
+
+    // Reach the harness once, at the start. A component that finds none draws
+    // that it found none, the same way it drew "no model" before there was a
+    // harness to find.
+    var haveHarness = false
+    var client = AiClient { channel: WtChannel { handle: 0 } }
+    match aiConnect() {
+        Connected(reached) -> {
+            client = reached
+            haveHarness = true
+        }
+        NoHarness -> {
+            aiViewRecordHarness(false, "", "No AI harness is running beside Harmony AI.")
+        }
+    }
 
     while attachment.shouldRun() {
         attachment.settle()
         var worked = false
+
         let delivery = attachment.pump()
         if delivery.arrived() {
             let moved = aiPointer(surfaces, delivery)
@@ -50,29 +56,173 @@ function entry() {
                     reported = true
                 }
             }
-            harness = aiHarnessServe(move harness, attachment, runtime, delivery)
+            aiServeShell(attachment, delivery, client, haveHarness)
             worked = true
         }
+
+        if aiServeViewRequests(client, haveHarness) {
+            worked = true
+        }
+
+        if haveHarness {
+            if aiPumpHarness(client, attachment) {
+                worked = true
+            }
+        }
+
         if attachment.isAttached() {
-            // Drawn before it is announced, so the first frame the shell
-            // composites is one that has been written: a surface handed over
-            // empty is a rectangle of whatever the allocator last had in it.
-            // What the views draw, refreshed before they are drawn. The turn is
-            // the harness's and the capabilities are the runtime's, and neither
-            // is a thing a widget should be reaching into.
-            aiViewRecord(harness.session, runtime.capabilities(), harness.session.prompt)
             if aiDrawSurfaces(surfaces) {
                 aiAnnounceSurfaces(attachment, surfaces)
             }
-            harness = aiHarnessRelay(move harness, attachment, runtime)
         }
+
         if worked == false {
-            sleepMilliseconds(aiHarnessIdleMilliseconds())
+            sleepMilliseconds(aiIdleMilliseconds)
         }
     }
 
-    // The shell has gone, or would not have us. Either way there is nothing
-    // left to answer.
+    if haveHarness {
+        aiClose(client)
+    }
     attachment.detach()
+    aiCloseSurfaces(surfaces)
+    return
+}
+
+// Takes actions produced by controls inside the texture-backed AI surface.
+// Callbacks only enqueue intent; this loop remains the one owner of the client.
+function aiServeViewRequests(client: borrow AiClient, haveHarness: Bool) -> Bool {
+    var worked = false
+    // A follow-up typed while an agent is working stays queued until that turn
+    // finishes. The harness is deliberately single-turn today, so sending it
+    // early would let its between-round cancel read consume and discard the turn.
+    if aiIsRunning() == false {
+        let prompt = aiTakePendingPrompt()
+        if prompt.count > 0 {
+            let conversation = aiConversationForNextTurn()
+            aiViewStartTurn(conversation, prompt)
+            if haveHarness {
+                if aiSendTurn(client, conversation, prompt) == false {
+                    aiViewAppendAnswer("The AI harness could not receive this turn.")
+                    aiViewFinishTurn()
+                }
+            } else {
+                aiViewAppendAnswer("No AI harness is running beside Harmony AI.")
+                aiViewFinishTurn()
+            }
+            worked = true
+        }
+    }
+
+    let cancelConversation = aiTakeCancelConversation()
+    if conversationPresent(cancelConversation) {
+        if haveHarness {
+            let ignored = aiSendCancel(client, cancelConversation)
+        }
+        worked = true
+    }
+    return worked
+}
+
+// Answers what the shell asked over its channel: a turn to forward, or the
+// question of what can answer it.
+function aiServeShell(attachment: borrow mut HarmonyAttachment, delivery: borrow IpcDelivery, client: borrow AiClient, haveHarness: Bool) {
+    if delivery.sound() == false {
+        return
+    }
+    let method = delivery.envelope.method
+
+    if method == aiCapabilitiesMethod() {
+        let facts = aiViewFacts()
+        var answer = IpcWriter {}
+        encode_AiCapabilities(AiCapabilities {
+            runtimeReady: facts.runtimeReady,
+            model: facts.model,
+            streaming: true,
+            note: facts.note
+        }, answer)
+        let ignored = attachment.respond(delivery.envelope.call, aiCapabilitiesMethod(), answer.bytes)
+        return
+    }
+
+    if method == aiSendMethod() {
+        var reader = ipcPayloadReader(delivery.envelope)
+        let turn = decode_AiTurn(reader)
+        if reader.ok() {
+            aiViewStartTurn(turn.conversation, turn.text)
+            if haveHarness {
+                let sent = aiSendTurn(client, turn.conversation, turn.text)
+                let ignored = sent
+            }
+        }
+        return
+    }
+
+    if method == aiCancelMethod() {
+        var reader = ipcPayloadReader(delivery.envelope)
+        let cancel = decode_AiCancel(reader)
+        if reader.ok() && haveHarness {
+            let sent = aiSendCancel(client, cancel.conversation)
+            let ignored = sent
+        }
+        return
+    }
+
+    return
+}
+
+// Reads one thing the harness produced: what it can do, or a piece of an answer.
+//
+// A piece goes two places — into the view this draws and out as a delta the
+// shell hears — so a shell that draws its own caret and a component that draws
+// the whole conversation stay in step off one stream.
+function aiPumpHarness(client: borrow AiClient, attachment: borrow mut HarmonyAttachment) -> Bool {
+    match aiPoll(client) {
+        Ready(introduction) -> {
+            aiViewRecordHarness(introduction.ready, introduction.model, introduction.note)
+            return true
+        }
+        Delta(delta) -> {
+            let current = aiCurrentConversation()
+            let belongsHere = conversationSame(current, delta.conversation)
+            if belongsHere {
+                if delta.kind == AiDeltaKind.Continuing {
+                    aiViewAppendAnswer(delta.text)
+                }
+                if delta.kind == AiDeltaKind.Finished || delta.kind == AiDeltaKind.Failed {
+                    aiViewFinishTurn()
+                }
+            }
+            aiRelayDelta(attachment, delta)
+            return true
+        }
+        Activity(activity) -> {
+            aiViewRecordActivity(
+                activity.conversation,
+                activity.kind,
+                activity.name,
+                activity.detail,
+                activity.state
+            )
+            return true
+        }
+        Idle -> return false
+        Closed -> {
+            aiViewRecordHarness(false, "", "The AI harness has stopped.")
+            return false
+        }
+        Unknown -> return false
+    }
+}
+
+// Relays one harness delta to the shell as the delta it draws its caret from.
+function aiRelayDelta(attachment: borrow mut HarmonyAttachment, delta: borrow AiStreamDelta) {
+    var out = IpcWriter {}
+    encode_AiDelta(AiDelta {
+        conversation: delta.conversation,
+        text: delta.text,
+        kind: delta.kind
+    }, out)
+    let ignored = attachment.emit(aiDeltaMethod(), out.bytes)
     return
 }
