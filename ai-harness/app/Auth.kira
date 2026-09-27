@@ -1,0 +1,154 @@
+// Where the harness gets its keys, and the gateway it builds from them.
+//
+// Keys live in `~/.harmony/auth.toml`, out of the repository and out of the
+// process's arguments, so a key is a file on the machine rather than a string in
+// a build. The file names one section per provider:
+//
+//     [openrouter]
+//     key = "sk-or-..."
+//
+//     [openai]
+//     key = "sk-..."
+//
+//     [anthropic]
+//     key = "sk-ant-..."
+//
+// A section with no key, or a missing file, is a provider the harness cannot
+// reach — not an error. The gateway is built from whichever keys are present,
+// with OpenRouter first so it answers by default, and a harness with no keys at
+// all still runs and says so on every turn rather than failing to start.
+
+import Foundation
+import AI
+import AIOpenAI
+import AIOpenRouter
+import AIAnthropic
+
+// The keys read from the auth file. Empty strings for the providers it did not
+// name.
+struct AuthKeys {
+    var openrouter: String = ""
+    var openai: String = ""
+    var anthropic: String = ""
+}
+
+// The directory the harness keeps its per-user state in: keys, and the
+// certificate it publishes.
+function harmonyDirectory() -> String {
+    let home = environmentValue("HOME")
+    if home != "" {
+        return home + "/.harmony"
+    }
+    let profile = environmentValue("USERPROFILE")
+    if profile != "" {
+        return profile + "/.harmony"
+    }
+    return ".harmony"
+}
+
+// The path the auth file is read from.
+function authFilePath() -> String {
+    return harmonyDirectory() + "/auth.toml"
+}
+
+// The path the harness publishes its certificate to, and a client reads it from.
+function harnessCertificatePath() -> String {
+    return harmonyDirectory() + "/harness.der"
+}
+
+// Reads the keys, or empty ones when the file is absent.
+function loadAuthKeys() -> AuthKeys {
+    let contents = readFile(authFilePath())
+    if contents.ok == false {
+        return AuthKeys {}
+    }
+    return parseAuthKeys(contents.text)
+}
+
+// Parses the small TOML the auth file is: `[section]` headers and `key = "..."`
+// lines, everything else ignored. A hand parser rather than a general TOML one
+// because the file's whole grammar is those two lines, and a parser for more
+// would be more to be wrong about than the file can say.
+function parseAuthKeys(text: borrow String) -> AuthKeys {
+    var keys = AuthKeys {}
+    var section = ""
+    for rawLine in text.split("\n") {
+        let line = rawLine.trim()
+        if line == "" || line.startsWith("#") {
+            continue
+        }
+        if line.startsWith("[") && line.endsWith("]") {
+            let opened = line.split("[")
+            if opened.count >= 2 {
+                let closed = opened[1].split("]")
+                if closed.count >= 1 {
+                    section = closed[0].trim()
+                }
+            }
+            continue
+        }
+        if line.startsWith("key") && line.contains("\"") {
+            let parts = line.split("\"")
+            if parts.count >= 2 {
+                let value = parts[1]
+                if section == "openrouter" {
+                    keys.openrouter = value
+                }
+                if section == "openai" {
+                    keys.openai = value
+                }
+                if section == "anthropic" {
+                    keys.anthropic = value
+                }
+            }
+        }
+    }
+    return keys
+}
+
+// Whether any provider key was found. A harness with none still runs, but it
+// answers every turn by saying so, and a client draws that rather than "ask
+// anything".
+function authHasAnyKey(keys: borrow AuthKeys) -> Bool {
+    return keys.openrouter != "" || keys.openai != "" || keys.anthropic != ""
+}
+
+// A one-line description of what the harness can reach, for a person.
+function authNote(keys: borrow AuthKeys) -> String {
+    var names: [String] = []
+    if keys.openrouter != "" {
+        names.append("openrouter")
+    }
+    if keys.openai != "" {
+        names.append("openai")
+    }
+    if keys.anthropic != "" {
+        names.append("anthropic")
+    }
+    if names.count == 0 {
+        return "no provider keys found in " + authFilePath()
+    }
+    var text = "reaching:"
+    for name in names {
+        text = text + " " + name
+    }
+    return text
+}
+
+// Builds a gateway over the backends the keys allow, OpenRouter first so it is
+// the default route. A key that is empty adds no backend, so a request for a
+// model that only that provider serves fails with `NoRoute` — locally, before
+// any send.
+function buildGateway(keys: borrow AuthKeys) -> Gateway {
+    var backends: [Any Backend] = []
+    if keys.openrouter != "" {
+        backends.append(openRouter(keys.openrouter))
+    }
+    if keys.openai != "" {
+        backends.append(OpenAIBackend(apiKey: keys.openai))
+    }
+    if keys.anthropic != "" {
+        backends.append(AnthropicBackend(apiKey: keys.anthropic))
+    }
+    return gateway(move backends)
+}

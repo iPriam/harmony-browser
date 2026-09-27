@@ -203,6 +203,7 @@ function harmonyBrowserServeShell() {
     }
 
     attachment.detach()
+    browserCloseSurfaces(surfaces)
     // The window never opened, so nothing else has to be taken down in order --
     // but the engine, its two processes and the pages waiting on an answer are
     // still this process's to let go of.

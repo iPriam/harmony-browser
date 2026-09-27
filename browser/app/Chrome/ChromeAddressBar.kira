@@ -1,5 +1,6 @@
 import KiraUI
-import KiraUIFoundation
+import KCoreAnimation
+import Foundation
 
 // The address bar: what the page's URL is, what protects it, and where a new one
 // is typed.
@@ -16,22 +17,22 @@ import KiraUIFoundation
 // Every length below is a token, so a `.controlSize(...)` on the chrome moves
 // the bar and the buttons beside it together.
 function harmonyChromeAddressBarWidth(
-    context: borrow KiraUIFoundation.FoundationUiContext,
+    context: borrow BuildContext,
     modifiers: borrow ModifierContext,
 ) -> Float {
     let metrics = resolvedControlMetrics(modifiers)
     let gap = spacingImplementation(Spacing.Small, modifiers)
     // Four glyph slots share the row with the bar: back, forward, reload/stop
-    // and home.
-    let controls = 4.0 * metrics.buttonWidth
+    // and home. A glyph button is square, so its width is the control height.
+    let controls = 4.0 * metrics.height
     // What the window keeps at the leading edge of the row. The window is asked
     // rather than assumed: a bar that only fits while the corner is empty is a
     // bar that overruns the first thing put in it, and a bar sized for a corner
     // fuller than the one drawn is a bar that never reaches the width it could.
-    let leading = harmonyChromeLeadingSlots() * metrics.buttonWidth
+    let leading = harmonyChromeLeadingSlots() * metrics.height
     // A gap between each pair of items on the row, and the toolbar's own two.
     let gaps = 10.0 * gap
-    var width = context.viewport.width - controls - leading - gaps
+    var width = context.viewportWidth - controls - leading - gaps
     if width < 220.0 {
         width = 220.0
     }
@@ -44,7 +45,7 @@ function harmonyChromeAddressBarWidth(
 // The editable run inside the pill: the bar, less its own inset and the security
 // glyph in front of it.
 function harmonyChromeAddressTextWidth(
-    context: borrow KiraUIFoundation.FoundationUiContext,
+    context: borrow BuildContext,
     modifiers: borrow ModifierContext,
 ) -> Float {
     let gap = spacingImplementation(Spacing.Small, modifiers)
@@ -66,10 +67,10 @@ construct ChromeSecurityIndicator(level: ChromeSecurity) extends Widget {
 }
 
 construct ChromeAddressBar() extends Widget {
-    function lower(
-        context: borrow KiraUIFoundation.FoundationUiContext,
+    function describe(
+        context: borrow BuildContext,
         modifiers: borrow ModifierContext,
-    ) -> KiraUIFoundation.FoundationView {
+    ) -> CALayerDescription {
         let bar = HStack(spacing = Spacing.Small, alignment = VerticalAlignment.Center) {
             ChromeSecurityIndicator(level = harmonyChromeSecurityLevel())
 
@@ -92,6 +93,6 @@ construct ChromeAddressBar() extends Widget {
         .themeBorder(.Subtle)
         .width(harmonyChromeAddressBarWidth(context, modifiers))
         .height(harmonyChromeAddressFieldHeight())
-        return bar.lower(context, modifiers)
+        return bar.describe(context, modifierContextForChildren(modifiers))
     }
 }

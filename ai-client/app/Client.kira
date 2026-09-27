@@ -1,0 +1,151 @@
+// Talking to the AI harness.
+//
+// The harness publishes where it is — a port and a certificate under
+// `~/.harmony` — and this reads those, opens a QUIC channel, and speaks the same
+// small JSON protocol the harness does. A component holds one `AiClient` and,
+// each turn of its own loop, sends what the person said and reads back whatever
+// the harness has produced.
+//
+// Foundation is the whole of it. The model, the provider, the tool loop are all
+// the harness's business on the far side of this channel; a client sends text
+// and receives text, and knows none of it.
+
+import Foundation
+import HarmonyCore
+
+// A live connection to the harness.
+struct AiClient {
+    let channel: WtChannel
+}
+
+// The result of trying to reach the harness.
+enum AiConnection {
+    // Connected; here is the client to use.
+    Connected(AiClient)
+    // No harness is running — it published no port. A component shows this as
+    // "no AI installed" rather than as an error.
+    NoHarness
+}
+
+// The harness's opening word: what it answers as, and whether it can.
+struct AiReady {
+    let ready: Bool
+    let model: String
+    let note: String
+}
+
+// One piece of an answer, as it crossed the channel.
+//
+// Named apart from the shell-facing `AiDelta` in `HarmonyCore`: this is the
+// harness-facing shape a client reads, and a component that bridges the two
+// holds both at once.
+struct AiStreamDelta {
+    let conversation: ConversationId
+    let text: String
+    let kind: AiDeltaKind
+}
+
+// One tool, sub-agent, or run-status step reported by the harness.
+struct AiActivity {
+    let conversation: ConversationId
+    let kind: String
+    let name: String
+    let detail: String
+    let state: String
+}
+
+// What reading the channel found.
+enum AiEvent {
+    // The harness introduced itself.
+    Ready(AiReady)
+    // A piece of an answer arrived.
+    Delta(AiStreamDelta)
+    // A visible step in the agent run arrived.
+    Activity(AiActivity)
+    // Nothing has arrived since the last read.
+    Idle
+    // The harness is gone.
+    Closed
+    // A frame this build could not read. Ignored.
+    Unknown
+}
+
+// The directory the harness publishes itself in.
+function harmonyDirectory() -> String {
+    let home = environmentValue("HOME")
+    if home != "" {
+        return home + "/.harmony"
+    }
+    let profile = environmentValue("USERPROFILE")
+    if profile != "" {
+        return profile + "/.harmony"
+    }
+    return ".harmony"
+}
+
+// Reaches the harness, or reports that none is running.
+//
+// The port it bound and the certificate it holds are files the harness wrote;
+// a missing port file is a harness that is not there, which is an ordinary
+// answer and not a failure.
+function aiConnect() -> AiConnection {
+    let portFile = readFile(harmonyDirectory() + "/harness.port")
+    if portFile.ok == false {
+        return AiConnection.NoHarness
+    }
+    let port = portFile.text.trim().toInt()
+    if port <= 0 {
+        return AiConnection.NoHarness
+    }
+    let channel = wtConnect(port, harmonyDirectory() + "/harness.der")
+    return AiConnection.Connected(AiClient { channel: channel })
+}
+
+// Sends one turn: which conversation, and what the person said.
+function aiSendTurn(client: borrow AiClient, conversation: ConversationId, text: borrow String) -> Bool {
+    return wtSendBytes(client.channel, encodeTurn(conversation, text))
+}
+
+// Asks the harness to stop a conversation's turn.
+function aiSendCancel(client: borrow AiClient, conversation: ConversationId) -> Bool {
+    return wtSendBytes(client.channel, encodeCancel(conversation))
+}
+
+// Reads the next event from the harness, without waiting.
+function aiPoll(client: borrow AiClient) -> AiEvent {
+    match wtReceiveBytes(client.channel) {
+        Frame(bytes) -> return clientEvent(decodeEvent(bytes))
+        Idle -> return AiEvent.Idle
+        Closed -> return AiEvent.Closed
+    }
+}
+
+// Maps a decoded wire event to the client's own event surface.
+function clientEvent(event: AiWireEvent) -> AiEvent {
+    match event {
+        Ready(ready) -> return AiEvent.Ready(AiReady {
+            ready: ready.ready,
+            model: ready.model,
+            note: ready.note
+        })
+        Delta(delta) -> return AiEvent.Delta(AiStreamDelta {
+            conversation: delta.conversation,
+            text: delta.text,
+            kind: delta.kind
+        })
+        Activity(activity) -> return AiEvent.Activity(AiActivity {
+            conversation: activity.conversation,
+            kind: activity.kind,
+            name: activity.name,
+            detail: activity.detail,
+            state: activity.state
+        })
+        Unknown -> return AiEvent.Unknown
+    }
+}
+
+// Closes the connection.
+function aiClose(client: borrow AiClient) {
+    wtCloseChannel(client.channel)
+    return
+}

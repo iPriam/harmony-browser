@@ -1,0 +1,17 @@
+// The client side of the AI harness: what a component uses to talk to it.
+//
+// The harness is a process of its own that a component reaches over a QUIC
+// channel. This is the thin library that finds it, connects, sends turns, and
+// reads the stream back as typed events — Foundation and nothing else, so a
+// component that draws (and so builds native) depends on none of the model SDK
+// the harness carries.
+Package HarmonyAiClient {
+    let version = "0.1.0"
+    let kira = "0.1.0"
+    let kind = PackageKind.Library
+    let moduleRoot = "HarmonyAiClient"
+    let defaults = Defaults { executionMode: Backend.Hybrid, buildTarget: BuildTarget.Host }
+    let dependencies = [
+        Dependency { name: "HarmonyCore", path: "../core" }
+    ]
+}

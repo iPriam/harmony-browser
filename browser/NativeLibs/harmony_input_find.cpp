@@ -124,7 +124,10 @@ void postFind(const std::string& text, bool backwards, bool hide)
     request->text = text;
     request->options = backwards ? kFindOptionsBackward : kFindOptionsForward;
     request->hide = hide;
-    hb_tabs_invoke_on_webkit_thread(runFind, request);
+    hb_tabs_invoke_owned_on_webkit_thread(
+        runFind,
+        [](void* context) { delete static_cast<FindRequest*>(context); },
+        request);
 }
 
 } // namespace

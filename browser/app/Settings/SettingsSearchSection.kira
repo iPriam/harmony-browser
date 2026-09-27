@@ -1,4 +1,5 @@
 import KiraUI
+import Foundation
 
 // The search engines, listed and edited.
 //

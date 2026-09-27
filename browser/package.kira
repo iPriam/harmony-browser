@@ -6,7 +6,6 @@ Package HarmonyBrowser {
     let allowThinFfiShim = true
     let dependencies = [
         Dependency { name: "KiraUI", path: "../../kira-ui" },
-        Dependency { name: "OpacityUI", path: "../../opacity-ui" },
         Dependency { name: "KiraGraphics", path: "../../kira-graphics" },
         Dependency { name: "HarmonyCore", path: "../core" }
     ]

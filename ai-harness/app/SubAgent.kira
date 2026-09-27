@@ -1,0 +1,151 @@
+// Sub-agents, after Codex's design: the model delegates a scoped task to a
+// specialized agent that runs with its OWN context and its own tool loop, and
+// reports one result back.
+//
+// An agent is defined by config — a TOML file under `~/.harmony/agents/`, each
+// with a `name`, a `description` the model chooses by, and
+// `developer_instructions` that set the sub-agent's role. Two built-ins ship so
+// the feature works with no config: a general one and a read-only code searcher.
+//
+// # Depth, not breadth
+//
+// A sub-agent runs the same tools as the top agent with ONE removed — it cannot
+// spawn sub-agents of its own (`subAgentMaxDepth` = 1), which is what stops a
+// delegation from recursing without end. Codex runs its sub-agents in parallel;
+// this runs them one after another, because Kira's task model cannot carry a
+// channel or a gateway across a spawn — so a turn that delegates three tasks
+// pays for three in sequence, and the model gets all three results in hand.
+
+import Foundation
+import AI
+
+// How deep delegation may go. One: the top agent delegates, a sub-agent does
+// not.
+let subAgentMaxDepth = 1
+
+// A sub-agent the model may delegate to.
+struct AgentDef {
+    let name: String
+    let description: String
+    let instructions: String
+}
+
+// Every sub-agent available: the built-ins, then any the user defined under
+// `~/.harmony/agents/`.
+function loadAgents() -> [AgentDef] {
+    var agents: [AgentDef] = []
+    agents.append(AgentDef {
+        name: "general",
+        description: "A general-purpose sub-agent for any self-contained task.",
+        instructions: "You are a focused sub-agent. Use your tools to complete the task, then report the result concisely. You have no access to the parent conversation beyond the task given."
+    })
+    agents.append(AgentDef {
+        name: "search",
+        description: "Searches the codebase read-only and reports findings with file paths.",
+        instructions: "You are a code-search sub-agent. Use read_file and the command tool (grep, find, ls, rg) to locate what was asked. Report concrete file paths and line references. Do not modify anything."
+    })
+
+    let directory = harmonyDirectory() + "/agents"
+    if isDirectory(directory) {
+        for name in listDirectory(directory).names {
+            if name.endsWith(".toml") {
+                let contents = readFile(directory + "/" + name)
+                if contents.ok {
+                    let def = parseAgentDef(contents.text)
+                    if def.name != "" {
+                        agents.append(def)
+                    }
+                }
+            }
+        }
+    }
+    return agents
+}
+
+// Parses one agent definition file: `name`, `description`, and
+// `developer_instructions` as `key = "value"` lines, the same small TOML the
+// auth file is.
+function parseAgentDef(text: borrow String) -> AgentDef {
+    var name = ""
+    var description = ""
+    var instructions = ""
+    for rawLine in text.split("\n") {
+        let line = rawLine.trim()
+        if line == "" || line.startsWith("#") {
+            continue
+        }
+        let key = tomlKey(line)
+        let value = tomlValue(line)
+        if key == "name" {
+            name = value
+        }
+        if key == "description" {
+            description = value
+        }
+        if key == "developer_instructions" {
+            instructions = value
+        }
+    }
+    return AgentDef { name: name, description: description, instructions: instructions }
+}
+
+function tomlKey(line: borrow String) -> String {
+    let parts = line.split("=")
+    if parts.count >= 1 {
+        return parts[0].trim()
+    }
+    return ""
+}
+
+function tomlValue(line: borrow String) -> String {
+    let parts = line.split("\"")
+    if parts.count >= 2 {
+        return parts[1]
+    }
+    return ""
+}
+
+// The index of a named agent, or -1.
+function agentFind(agents: borrow [AgentDef], name: borrow String) -> Int {
+    for index in 0..agents.count {
+        if agents[index].name == name {
+            return index
+        }
+    }
+    return -1
+}
+
+// Runs a sub-agent to completion on its task and returns its final answer.
+//
+// A fresh conversation of its own — the instructions and the task, nothing of
+// the parent's — and the harness tools minus spawn, looped until it answers with
+// text rather than another tool call.
+function runSubAgent(gateway: borrow Gateway, agents: borrow [AgentDef], def: borrow AgentDef, task: borrow String) -> String {
+    var history: [Message] = []
+    var parts: [Input] = []
+    parts.append(.Text(TextPart { text: def.instructions + "\n\nTask: " + task }))
+    history.append(.User(move parts))
+
+    for round in 0..agentToolRounds {
+        let request = Request {
+            model: harnessModel(),
+            messages: copyMessages(history),
+            tools: agentTools(agents, subAgentMaxDepth),
+            outputSchema: .None,
+            providerOptions: .None
+        }
+        match gateway.generate(request) {
+            Error(problem) -> return "sub-agent error: " + aiErrorText(problem)
+            Ok(response) -> {
+                if outputsHaveCall(response.output) {
+                    let results = runToolCalls(response.output, gateway, agents, subAgentMaxDepth)
+                    history.append(.Assistant(copyOutputs(response.output)))
+                    history.append(.ToolResults(results))
+                } else {
+                    return firstText(response.output)
+                }
+            }
+        }
+    }
+    return "sub-agent did not settle within its tool budget"
+}

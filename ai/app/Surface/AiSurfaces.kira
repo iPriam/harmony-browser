@@ -3,8 +3,7 @@ import HarmonyCore
 import KiraGraphics
 import KiraIpc
 import KiraUI
-import KiraUIFoundation
-import OpacityUI
+import KCoreAnimation
 
 // What Harmony AI paints, and where.
 //
@@ -14,7 +13,7 @@ import OpacityUI
 // makes swiping between the tab list and the assistant possible at all.
 
 struct AiSurfaces {
-    var device: GraphicsHeadless = GraphicsHeadless {}
+    var device: GraphicsHeadless = harmonyNoDevice()
     var painter: HarmonySurfacePainter = HarmonySurfacePainter {}
     var sidebar: HarmonyComponentSurface = harmonyNoSurface(HarmonySurfaceRole.Sidebar, "")
     var document: HarmonyComponentSurface = harmonyNoSurface(HarmonySurfaceRole.Document, "")
@@ -44,6 +43,15 @@ struct AiSurfaces {
         }
         return document.note
     }
+}
+
+function aiCloseSurfaces(surfaces: borrow mut AiSurfaces) {
+    harmonyReleaseComponentSurface(surfaces.inspector)
+    harmonyReleaseComponentSurface(surfaces.document)
+    harmonyReleaseComponentSurface(surfaces.sidebar)
+    harmonyClosePainter(surfaces.painter)
+    closeHeadlessGraphics(surfaces.device)
+    return
 }
 
 // Take one role's allotment: open the texture the window asked for, at the size
@@ -123,37 +131,16 @@ function aiDocumentColour() -> Color {
 // out. Nothing in them knows they are being drawn for another process, which is
 // what made giving the assistant a real interface a matter of writing the views
 // rather than of writing a second renderer for them.
-function aiSidebarTree(surfaces: borrow AiSurfaces) -> FoundationView {
-    let themed = modifierContextApply(ModifierContext {}, modifierDeltaTheme(Opacity()))
-    return harmonyLowerWidget(
-        surfaces.painter,
-        AiSidebar(),
-        themed,
-        harmonyAllotmentWidth(surfaces.sidebarRoom),
-        harmonyAllotmentHeight(surfaces.sidebarRoom)
-    )
+function aiSidebarTree(surfaces: borrow AiSurfaces) -> Any Widget {
+    return AiSidebar()
 }
 
-function aiContentTree(surfaces: borrow AiSurfaces) -> FoundationView {
-    let themed = modifierContextApply(ModifierContext {}, modifierDeltaTheme(Opacity()))
-    return harmonyLowerWidget(
-        surfaces.painter,
-        AiContent(),
-        themed,
-        harmonyAllotmentWidth(surfaces.documentRoom),
-        harmonyAllotmentHeight(surfaces.documentRoom)
-    )
+function aiContentTree(surfaces: borrow AiSurfaces) -> Any Widget {
+    return AiContent()
 }
 
-function aiInspectorTree(surfaces: borrow AiSurfaces) -> FoundationView {
-    let themed = modifierContextApply(ModifierContext {}, modifierDeltaTheme(Opacity()))
-    return harmonyLowerWidget(
-        surfaces.painter,
-        AiInspector(),
-        themed,
-        harmonyAllotmentWidth(surfaces.inspectorRoom),
-        harmonyAllotmentHeight(surfaces.inspectorRoom)
-    )
+function aiInspectorTree(surfaces: borrow AiSurfaces) -> Any Widget {
+    return AiInspector()
 }
 
 function aiDrawSurfaces(surfaces: borrow mut AiSurfaces) -> Bool {

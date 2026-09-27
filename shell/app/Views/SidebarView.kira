@@ -1,5 +1,6 @@
 import HarmonyCore
 import KiraUI
+import KCoreAnimation
 
 // The window's leading column.
 //
@@ -45,8 +46,8 @@ construct SidebarView() extends Widget {
                 // straight. Drawn into the box the layout actually gave it, a
                 // surface cannot be 2pt out however wrong the prediction was.
                 TextureViewport(
-                    texture = harmonyShellSidebarTexture(),
-                    secondary = harmonyShellSidebarDuring(),
+                    texture = TextureHandle(harmonyShellSidebarTexture()),
+                    secondary = TextureHandle(harmonyShellSidebarDuring()),
                     transition = harmonyShellSwipe()
                 )
             }

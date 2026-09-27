@@ -1,0 +1,98 @@
+import Foundation
+
+// C11: which model plays each functional role. The point (SI.md §2.5) is that
+// the model choices live in ONE place behind config, so swapping the evaluator —
+// or any role — is a config change, never a code change. The evaluator is also
+// meant to be dynamic (SI.md §2.3), which is exactly this: edit `si/models.toml`
+// and the next agent resolves the new model.
+//
+// A model is named by its provider string; the router only chooses the name, and
+// the existing gateway (Auth.kira) turns a name into a call.
+
+struct SiModelRoles {
+    // The worker carries ~80% of spend (SI.md §2.5), so its default is a free
+    // model — the same one the base harness answers as.
+    var worker: String = "nvidia/nemotron-3-super-120b-a12b:free"
+    var orchestrator: String = "nvidia/nemotron-3-super-120b-a12b:free"
+    var adversarial: String = "nvidia/nemotron-3-super-120b-a12b:free"
+    // SI.md §2.3 names Muse Spark 1.3 Free as the current default evaluator.
+    var evaluator: String = "Muse Spark 1.3 Free"
+    var compactor: String = "nvidia/nemotron-3-super-120b-a12b:free"
+    var verifier: String = "nvidia/nemotron-3-super-120b-a12b:free"
+}
+
+// The model for a hierarchy role (SI.md §2.2). The two system functions —
+// evaluator and compactor — are read straight off the struct, since they are not
+// positions in the hierarchy.
+function modelForRole(roles: borrow SiModelRoles, role: borrow SiRole) -> String {
+    match role {
+        TopOrch -> return "" + roles.orchestrator
+        LowOrch -> return "" + roles.orchestrator
+        Adversarial -> return "" + roles.adversarial
+        Worker -> return "" + roles.worker
+        Verifier -> return "" + roles.verifier
+    }
+}
+
+// The roles as configured, from `si/models.toml` when present, else the defaults
+// above. The file is the same small `key = "value"` shape the auth file is; an
+// unknown key is ignored, and a missing file leaves every default in place.
+function loadModelRoles() -> SiModelRoles {
+    var roles = SiModelRoles {}
+    let contents = readFile(siModelsPath())
+    if contents.ok == false {
+        return roles
+    }
+    for rawLine in contents.text.split("\n") {
+        let line = rawLine.trim()
+        if line == "" || line.startsWith("#") {
+            continue
+        }
+        let key = siConfigKey(line)
+        let value = siConfigValue(line)
+        if value == "" {
+            continue
+        }
+        if key == "worker" {
+            roles.worker = value
+        }
+        if key == "orchestrator" {
+            roles.orchestrator = value
+        }
+        if key == "adversarial" {
+            roles.adversarial = value
+        }
+        if key == "evaluator" {
+            roles.evaluator = value
+        }
+        if key == "compactor" {
+            roles.compactor = value
+        }
+        if key == "verifier" {
+            roles.verifier = value
+        }
+    }
+    return roles
+}
+
+function siModelsPath() -> String {
+    return siDir() + "/models.toml"
+}
+
+// The `key` of a `key = "value"` line.
+function siConfigKey(line: borrow String) -> String {
+    let parts = line.split("=")
+    if parts.count >= 1 {
+        return parts[0].trim()
+    }
+    return ""
+}
+
+// The quoted `value` of a `key = "value"` line, or empty when there is none.
+function siConfigValue(line: borrow String) -> String {
+    let parts = line.split("\"")
+    if parts.count >= 2 {
+        return parts[1]
+    }
+    return ""
+}

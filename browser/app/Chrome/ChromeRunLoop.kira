@@ -1,6 +1,6 @@
 import KiraGraphics
 import KiraUI
-import KiraUIFoundation
+import KCoreAnimation
 
 // The browser's run loop.
 //
@@ -22,25 +22,18 @@ import KiraUIFoundation
 // not the only one: a page asks for the camera, a download counts bytes, a tab
 // settles on a title. Naming `harmonyChromeNeedsRebuild` here would have made
 // the toolbar the only surface that could ever be right.
+// The retained runner rebuilds and reconciles the widget tree every frame and
+// lets the compositor animate the difference, so the `needsRebuild` predicate the
+// old immediate-mode runner needed is gone: a load bar that advances on the
+// engine's schedule is simply the next frame's reconcile, not a rebuild the
+// runner had to be told to make.
 function RunHarmonyBrowserApp(
     title: String,
     width: Int,
     height: Int,
-    rootBuilder: borrow () -> KiraUIApp,
+    rootBuilder: borrow () -> Any Widget,
     engineFrame: borrow (borrow mut KiraGraphics.RenderFrame) -> Void,
-    needsRebuild: borrow () -> Bool,
 ) {
-    RunFoundationInteractiveApp(move title, width, height, { context in
-        let build: borrow () -> KiraUIApp = rootBuilder
-        let app = build()
-        let root = app.content
-        return root.lower(context, ModifierContext {})
-    },
-        engineFrame: engineFrame,
-        needsRebuild: needsRebuild,
-        showFpsOverlay: false,
-        showGraphicsHud: false,
-        rebuildOnResize: true
-    )
+    RunKiraWindowApp(move title, width, height, rootBuilder, engineFrame)
     return
 }

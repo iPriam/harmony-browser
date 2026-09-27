@@ -3,8 +3,7 @@ import HarmonyCore
 import KiraGraphics
 import KiraUI
 import KiraIpc
-import KiraUIFoundation
-import OpacityUI
+import KCoreAnimation
 
 // What Harmony Browser paints, and where.
 //
@@ -18,7 +17,7 @@ import OpacityUI
 // Neither component knows that is happening, and neither has to.
 
 struct BrowserSurfaces {
-    var device: GraphicsHeadless = GraphicsHeadless {}
+    var device: GraphicsHeadless = harmonyNoDevice()
     var painter: HarmonySurfacePainter = HarmonySurfacePainter {}
     var sidebar: HarmonyComponentSurface = harmonyNoSurface(HarmonySurfaceRole.Sidebar, "")
     var page: HarmonyComponentSurface = harmonyNoSurface(HarmonySurfaceRole.Document, "")
@@ -44,6 +43,17 @@ struct BrowserSurfaces {
         }
         return page.note
     }
+}
+
+function browserCloseSurfaces(surfaces: borrow mut BrowserSurfaces) {
+    harmonyReleaseComponentSurface(surfaces.overlay)
+    harmonyReleaseComponentSurface(surfaces.page)
+    harmonyReleaseComponentSurface(surfaces.sidebar)
+    harmonyClosePainter(surfaces.painter)
+    // Shut the device down in place — it is a single-owner native value held in a
+    // field, which `close` cannot consume.
+    closeHeadlessGraphics(surfaces.device)
+    return
 }
 
 // Take one role's allotment: open the texture the window asked for, at the size
@@ -134,18 +144,11 @@ function browserPageColour() -> Color {
 // is the property that made moving the sidebar across a process boundary a
 // change of who calls it rather than a rewrite.
 
-function browserSidebarTree(surfaces: borrow BrowserSurfaces) -> FoundationView {
-    let sidebar = HarmonyBrowserSidebar()
-    // Built HERE, where Opacity() is constructed, and handed over already
-    // applied. Nothing carries the theme across a call.
-    let themed = modifierContextApply(ModifierContext {}, modifierDeltaTheme(Opacity()))
-    return harmonyLowerWidget(
-        surfaces.painter,
-        sidebar,
-        themed,
-        harmonyAllotmentWidth(surfaces.sidebarRoom),
-        harmonyAllotmentHeight(surfaces.sidebarRoom)
-    )
+function browserSidebarTree(surfaces: borrow BrowserSurfaces) -> Any Widget {
+    // A bare `ModifierContext` resolves to the catalog-backed default: KCoreUI's
+    // DefaultCatalog is the toolkit's floor, so an unthemed tree is already
+    // themed. The paint pass describes and lays this out against the surface.
+    return HarmonyBrowserSidebar()
 }
 
 // What the overlay layer is cleared to.
@@ -163,16 +166,8 @@ function browserOverlayColour() -> Color {
 // every frame to hold nothing is the cost of the whole window paid for an empty
 // layer, and the shell composites nothing for a component that has dropped its
 // overlay -- so an idle browser costs the overlay pass nothing at all.
-function browserOverlayTree(surfaces: borrow BrowserSurfaces) -> FoundationView {
-    let overlay = HarmonyBrowserOverlay()
-    let themed = modifierContextApply(ModifierContext {}, modifierDeltaTheme(Opacity()))
-    return harmonyLowerWidget(
-        surfaces.painter,
-        overlay,
-        themed,
-        harmonyAllotmentWidth(surfaces.overlayRoom),
-        harmonyAllotmentHeight(surfaces.overlayRoom)
-    )
+function browserOverlayTree(surfaces: borrow BrowserSurfaces) -> Any Widget {
+    return HarmonyBrowserOverlay()
 }
 
 // Where the window says its pointer is, over whichever surface it names.

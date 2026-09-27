@@ -1,4 +1,5 @@
 import KiraUI
+import Foundation
 
 // The preferences panel: everything a person can change about how this browser
 // behaves, grouped by what it is about.
