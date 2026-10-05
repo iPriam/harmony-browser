@@ -45,7 +45,7 @@ function compactSession(gateway: borrow Gateway, session: borrow mut Session) {
     }
     let rebuiltCount = rebuilt.count
     session.history = rebuilt
-    printLine("harmony-ai-harness: compacted conversation to " + String(rebuiltCount) + " messages")
+    print("harmony-ai-harness: compacted conversation to " + String(rebuiltCount) + " messages")
     return
 }
 
