@@ -34,22 +34,22 @@ async function serve() -> Int {
     if isDirectory(directory) == false {
         let made = makeDirectory(directory)
         if made == false {
-            printLine("harmony-ai-harness: could not create " + directory)
+            print("harmony-ai-harness: could not create " + directory)
             return 1
         }
     }
 
     let server = wtServe(harnessCertificatePath())
     if wtServerReady(server) == false {
-        printLine("harmony-ai-harness: could not bind the server")
+        print("harmony-ai-harness: could not bind the server")
         return 1
     }
     let port = wtServerPort(server)
     let wrotePort = writeFile(directory + "/harness.port", String(port))
     let ignored = wrotePort
 
-    printLine("harmony-ai-harness: listening on port " + String(port))
-    printLine("harmony-ai-harness: " + note)
+    print("harmony-ai-harness: listening on port " + String(port))
+    print("harmony-ai-harness: " + note)
 
     var channels: [WtChannel] = []
     var sessions: [Session] = []

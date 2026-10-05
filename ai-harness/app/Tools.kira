@@ -174,7 +174,7 @@ function checkCommandTool() -> Tool {
 // `gateway`, `agents`, and `depth` are here for `spawn_agent`, which runs a
 // whole sub-agent; every other tool ignores them.
 function runTool(call: borrow ToolCall, gateway: borrow Gateway, agents: borrow [AgentDef], depth: Int) -> ToolResult {
-    printLine("harmony-ai-harness: tool call -> " + call.name)
+    print("harmony-ai-harness: tool call -> " + call.name)
 
     if call.name == "spawn_agent" {
         if depth >= subAgentMaxDepth {
@@ -186,7 +186,7 @@ function runTool(call: borrow ToolCall, gateway: borrow Gateway, agents: borrow 
         if found < 0 {
             return textResult(call.id, "no such agent: " + agentName)
         }
-        printLine("harmony-ai-harness: spawn sub-agent -> " + agentName)
+        print("harmony-ai-harness: spawn sub-agent -> " + agentName)
         return textResult(call.id, runSubAgent(gateway, agents, agents[found], task))
     }
 
